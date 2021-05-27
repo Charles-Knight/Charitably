@@ -33,10 +33,62 @@ from .models import get_user_email
 
 url_signer = URLSigner(session)
 
+
+"""
+Page Endpoints
+"""
+
+"""
+Index is a simple static page that asks the user to log in. If the user is already logged in then
+they should be forward to the main application page
+"""
 @action('index')
 @action.uses(db, auth, 'index.html')
 def index():
+    email = get_user_email()
+    if email != None:
+        redirect(URL('organizations'))
+
+    return dict(
+        email = get_user_email()
+    )
+
+@action('organizations')
+@action.uses(db, auth, url_signer, 'organizations_view.html')
+def org_view():
+    if get_user_email() == None:
+        redirect(URL('index'))
+    
     return dict(
         # COMPLETE: return here any signed URLs you need.
-        my_callback_url = URL('my_callback', signer=url_signer),
+        load_orgs_url   = URL('load_orgs', signer=url_signer),
+        add_org_url     = URL('add_org', signer=url_signer),
+        delete_org_url  = URL('delete_org', signer=url_signer),
+        edit_org_url    = URL('edit_org', signer=url_signer),
+        email           = get_user_email()
     )
+
+"""
+API Endpoints
+"""
+@action('load_orgs')
+@action.uses(db, url_signer.verify())
+def load_orgs():
+    pass
+
+@action('add_org')
+@action.uses(db, url_signer.verify())
+def add_org():
+    pass
+
+@action('delete_org')
+@action.uses(db, url_signer.verify())
+def delete_org():
+    pass
+
+@action('edit_org')
+@action.uses(db, url_signer.verify())
+def edit_org():
+    pass
+
+
