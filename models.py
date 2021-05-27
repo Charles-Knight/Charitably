@@ -28,6 +28,7 @@ db.define_table(
 db.define_table(
     'organizations',
     Field('org_name', requires=IS_NOT_EMPTY()),
+    Field('org_web'),
     Field('org_description'),
     Field('proposed_by', 'references auth_user')
 )

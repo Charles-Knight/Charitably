@@ -11,10 +11,15 @@ let init = (app) => {
     app.data = {
         // Complete as you see fit.
         add_mode: false,
+
+        // Data items for input mode
         modal_active: "modal",
         new_org_name: "",
         new_org_web : "",
-        new_org_description : ""
+        new_org_description : "",
+
+        // Data items for display
+        orgs : []
     };
 
     app.enumerate = (a) => {
@@ -31,13 +36,22 @@ let init = (app) => {
     };
 
     app.clear_form = function(){
-        new_org_name = "";
-        new_org_web = "";
-        new_org_description = "";
+        app.vue.new_org_name = "";
+        app.vue.new_org_web = "";
+        app.vue.new_org_description = "";
     };
 
     app.add_org = function(){
+        app.vue.orgs.push({
+            name: app.vue.new_org_name,
+            web: app.vue.new_org_web,
+            description: app.vue.new_org_description,
+            deleteable: true
 
+        });
+        app.enumerate(app.vue.orgs);
+        app.clear_form();
+        app.set_add_status("modal");
     };
 
 
