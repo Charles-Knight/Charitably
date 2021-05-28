@@ -82,15 +82,23 @@ let init = (app) => {
         });
     };
 
+    app.clear_allocations = function(){
+        app.vue.allocations = []
+    }
+
 
     // This contains all the methods.
     app.methods = {
-        // Complete as you see fit.
+        // Functions for add orgs form
         set_add_status: app.set_add_status,
         clear_form: app.clear_form,
 
+        // Functions for org management
         add_org : app.add_org,
-        delete_org: app.delete_org
+        delete_org: app.delete_org,
+
+        // Functions for allocations
+        clear_allocations: app.clear_allocations
     };
 
     // This creates the Vue instance.

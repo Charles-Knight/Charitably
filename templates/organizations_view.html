@@ -59,6 +59,8 @@ Actual user content: We go here only when the user is logged in
     <div class="column is-4">
       <div class="box">
         <label class="label">Your allocations</label>
+        
+        <!-- List of allocations -->
         <nav v-for="a in allocations.slice()" class="level">
           <div class="level-left">
             <div class="level-item">
@@ -67,13 +69,38 @@ Actual user content: We go here only when the user is logged in
           </div>
           <div class="level-right">
             <div class="level-item">
+              <!-- <input type="text" v-model="a.amount" class="input"> -->
               <p class="subtitle">{{a.amount}}</p>    
             </div>
           </div>
         </nav>
-      </div>
 
-    </div>
+        <!-- Submit and clear buttons -->
+        <nav class="level">
+          <div class="level-left"></div>
+          <div class="level-right">
+            
+            <!-- Submit button -->
+            <div class="level-item">
+              <div class="container block">
+                <button @click="set_add_status('modal is-active')" class="button is-primary">
+                  <i class="fa fa-check fa-fw"></i>Submit
+                </button>
+              </div>
+            </div>
+            
+            <!-- Clear button -->
+            <div class="level-item">
+              <div class="container block">
+                <button @click="clear_allocations()" class="button is-danger">
+                  <i class="fa fa-trash fa-fw"></i>Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div> <!-- End of allocations column -->
   </div>
 
   <!---------------------------------------------------------------------------------------
@@ -89,8 +116,8 @@ Actual user content: We go here only when the user is logged in
           <p class="modal-card-title">Add an organization</p>
           <button class="delete"  @click="set_add_status('modal')" aria-label="close"></button>
         </header>
-        <section class="modal-card-body">
-          
+        
+        <section class="modal-card-body">  
           <!-- Form fields -->
           <div class="field">
             <label class="label">Name</label>
@@ -107,10 +134,9 @@ Actual user content: We go here only when the user is logged in
             <div class="control">
               <textarea type="text" v-model="new_org_description" class="textarea" placeholder="Tell us why this organization is important to you..."></textarea>
             </div>
-          </div>
-          
-          
+          </div>  
         </section>
+
         <footer class="modal-card-foot">
           <!-- Submit / Cancel  buttons -->
           <div class="field">
@@ -121,7 +147,6 @@ Actual user content: We go here only when the user is logged in
           </div>
         </footer>
       </div>
-
   </div>
 
 </div> <!-- The end of the div controlled by Vue -->
