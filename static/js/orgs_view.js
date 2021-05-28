@@ -42,16 +42,38 @@ let init = (app) => {
     };
 
     app.add_org = function(){
-        app.vue.orgs.push({
-            name: app.vue.new_org_name,
-            web: app.vue.new_org_web,
-            description: app.vue.new_org_description,
-            deleteable: true
+        axios.post(add_org_url,
+            {
+                name: app.vue.new_org_name,
+                web: app.vue.new_org_web,
+                description: app.vue.new_org_description
+            }
+            ).then(function (response){
+                app.vue.orgs.push({
+                    id: response.data.id,
+                    proposed_by: response.data.name,
+                    org_name: app.vue.new_org_name,
+                    org_web: app.vue.new_org_web,
+                    org_description: app.vue.new_org_description,
+                    deleteable: true
+                });
+                app.enumerate(app.vue.orgs);
+                app.clear_form();
+                app.set_add_status("modal");
+            });
+    };
 
+    app.delete_org = function(org_idx){
+        let id = app.vue.orgs[org_idx].id;
+        axios.get(delete_org_url, {params: {id: id}}).then(function(response){
+            for (let i = 0; i < app.vue.orgs.length; i++){
+                if (app.vue.orgs[i].id === id){
+                    app.vue.orgs.splice(i, 1);
+                    app.enumerate(app.vue.orgs);
+                    break;
+                }
+            }
         });
-        app.enumerate(app.vue.orgs);
-        app.clear_form();
-        app.set_add_status("modal");
     };
 
 
@@ -61,7 +83,8 @@ let init = (app) => {
         set_add_status: app.set_add_status,
         clear_form: app.clear_form,
 
-        add_org : app.add_org
+        add_org : app.add_org,
+        delete_org: app.delete_org
     };
 
     // This creates the Vue instance.
@@ -75,6 +98,9 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
+        axios.get(load_orgs_url).then(function(response) {
+            app.vue.orgs=app.enumerate(response.data.orgs);
+        });
     };
 
     // Call to the initializer.

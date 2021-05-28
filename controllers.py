@@ -29,7 +29,7 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
+from .models import get_user_email, get_user_id, get_user_name
 
 url_signer = URLSigner(session)
 
@@ -74,17 +74,50 @@ API Endpoints
 @action('load_orgs')
 @action.uses(db, url_signer.verify())
 def load_orgs():
-    pass
+    # Fetch orgs records
+    rows = db(db.organizations).select().as_list()
 
-@action('add_org')
+    for row in rows:
+        # Add name of proposer
+        proposer_id = row['proposed_by']
+        user_record = db(db.auth_user.id == proposer_id).select().first()
+        name = user_record['first_name'] + ' ' + user_record['last_name']
+        row['proposed_by'] = name
+
+        # Add Deleteable flag
+        if proposer_id == get_user_id():
+            row['deleteable'] = True
+        else:
+            row['deleteable'] = False
+    
+    return dict(
+        orgs=rows
+    )
+
+@action('add_org', method="POST")
 @action.uses(db, url_signer.verify())
 def add_org():
-    pass
+
+    id = db.organizations.insert(
+        org_name=request.json.get("name"),
+        org_web=request.json.get("web"),
+        org_description=request.json.get("description"),
+        proposed_by=get_user_id()
+    )
+    
+    return dict(
+        id=id,
+        name=get_user_name()
+    )
 
 @action('delete_org')
 @action.uses(db, url_signer.verify())
 def delete_org():
-    pass
+    id = request.params.get('id')
+    assert id is not None
+    db(db.organizations.id == id).delete()
+    
+    return "ok"
 
 @action('edit_org')
 @action.uses(db, url_signer.verify())
