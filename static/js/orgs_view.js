@@ -19,7 +19,13 @@ let init = (app) => {
         new_org_description : "",
 
         // Data items for display
-        orgs : []
+        orgs : [],
+        allocations: [
+            {
+                org_name: "Harmony-at-Home",
+                amount: "1000"
+            }
+        ]
     };
 
     app.enumerate = (a) => {

@@ -33,7 +33,8 @@ db.define_table(
 db.define_table(
     'group_membership',
     Field('groups_id', 'references groups'),
-    Field('users_id', 'references auth_user')
+    Field('users_id', 'references auth_user'),
+    Field('role')
 )
 
 # TODO: Add groups_id field to organizations table and configure controller
@@ -44,6 +45,14 @@ db.define_table(
     Field('org_web'),
     Field('org_description'),
     Field('proposed_by', 'references auth_user')
+)
+
+db.define_table(
+    'allocations',
+    Field('org_id', 'references organizations'),
+    Field('user_id', 'references auth_user'),
+    Field('amount')
+
 )
 
 db.commit()

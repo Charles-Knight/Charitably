@@ -21,38 +21,60 @@ Actual user content: We go here only when the user is logged in
 [[if email:]]
 <div class="section" id="vue-target" v-cloak>
 <!-- Put here your Vue.js template -->
-  
-
-
-  <!-- Add button -->
-  <div class="container block">
-    <button @click="set_add_status('modal is-active')" class="button is-primary">
-      <i class="fa fa-plus fa-fw"></i>
-    </button>
-  </div>
 
   <!-- Organizations List-->
-  <div v-for="o in orgs.slice()" class="section">
+  <div class="columns">
     
-    <!-- Card for each organization -->
-    
-      <div class="card">
-        <div class="card-header has-background-link-light">
-          <p class="card-header-title">{{o.org_name}}</p>
-        </div>
-        <div class="card-content">
-          <label class="label">Description</label>
-          <p>{{o.org_description}}</p>
-        </div>
-        <div class="card-footer">
-          <span class="card-footer-item">{{o.proposed_by}}</span>
-          <a v-bind:href="o.org_web" class="card-footer-item">Website</a>
-          <span v-if="o.deleteable" @click="delete_post(o._idx)" class="card-footer-item"><i class="fa fa-edit has-text-warning"></i></span>
-          <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-footer-item"><i class="fa fa-trash has-text-danger"></i></span>
-        </div>
-      </div> <!-- End Card-->
-    
-  </div> <!-- End List -->
+    <!-- Orgs column-->
+    <div class="column is-8">    
+
+      <!-- Add button -->
+      <div class="container block">
+        <button @click="set_add_status('modal is-active')" class="button is-primary">
+          <i class="fa fa-plus fa-fw"></i>
+        </button>
+      </div>
+      
+      <!-- Card for each organization -->
+      <div v-for="o in orgs.slice()" class="block">
+          <div class="card">
+            <div class="card-header has-background-link-light">
+              <p class="card-header-title">{{o.org_name}}</p>
+            </div>
+            <div class="card-content">
+              <label class="label">Description</label>
+              <p>{{o.org_description}}</p>
+            </div>
+            <div class="card-footer">
+              <span class="card-footer-item">{{o.proposed_by}}</span>
+              <a v-bind:href="o.org_web" class="card-footer-item">Website</a>
+              <span v-if="o.deleteable" @click="delete_post(o._idx)" class="card-footer-item"><i class="fa fa-edit has-text-warning"></i></span>
+              <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-footer-item"><i class="fa fa-trash has-text-danger"></i></span>
+            </div>
+          </div> <!-- End Card-->
+      </div> <!-- End List -->
+    </div>
+
+    <!-- Allocations Column -->
+    <div class="column is-4">
+      <div class="box">
+        <label class="label">Your allocations</label>
+        <nav v-for="a in allocations.slice()" class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <p class="subtitle">{{a.org_name}}</p>    
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="level-item">
+              <p class="subtitle">{{a.amount}}</p>    
+            </div>
+          </div>
+        </nav>
+      </div>
+
+    </div>
+  </div>
 
   <!---------------------------------------------------------------------------------------
   Add org card modal: is put in to view when the user clicks the plus button
@@ -83,7 +105,7 @@ Actual user content: We go here only when the user is logged in
 
             <label class="label">Description</label>
             <div class="control">
-              <input type="text" v-model="new_org_description" class="input">
+              <textarea type="text" v-model="new_org_description" class="textarea" placeholder="Tell us why this organization is important to you..."></textarea>
             </div>
           </div>
           
