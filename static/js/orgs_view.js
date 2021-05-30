@@ -47,6 +47,7 @@ let init = (app) => {
         app.vue.new_org_description = "";
     };
 
+    // Functions that operate on organizations
     app.add_org = function(){
         axios.post(add_org_url,
             {
@@ -69,6 +70,7 @@ let init = (app) => {
             });
     };
 
+    // Remove organization from the database and from the organiztions list view
     app.delete_org = function(org_idx){
         let id = app.vue.orgs[org_idx].id;
         axios.get(delete_org_url, {params: {id: id}}).then(function(response){
@@ -82,6 +84,14 @@ let init = (app) => {
         });
     };
 
+    // Functions to operate on allocations
+
+    // Allows the user to add an organizations from the organizations list to the allocations list
+    app.add_to_allocations = function(org_idx){
+
+    }
+
+    // Clears the allocations list
     app.clear_allocations = function(){
         app.vue.allocations = []
     }
@@ -98,6 +108,7 @@ let init = (app) => {
         delete_org: app.delete_org,
 
         // Functions for allocations
+        add_to_allocations: app.add_to_allocations,
         clear_allocations: app.clear_allocations
     };
 

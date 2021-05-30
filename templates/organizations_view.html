@@ -40,6 +40,11 @@ Actual user content: We go here only when the user is logged in
           <div class="card">
             <div class="card-header has-background-link-light">
               <p class="card-header-title">{{o.org_name}}</p>
+              <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-header-icon">
+                <span class="icon">
+                  <i class="fa fa-trash has-text-grey"></i>
+                </span>
+              </span>
             </div>
             <div class="card-content">
               <label class="label">Description</label>
@@ -48,8 +53,7 @@ Actual user content: We go here only when the user is logged in
             <div class="card-footer">
               <span class="card-footer-item">{{o.proposed_by}}</span>
               <a v-bind:href="o.org_web" class="card-footer-item">Website</a>
-              <span v-if="o.deleteable" @click="delete_post(o._idx)" class="card-footer-item"><i class="fa fa-edit has-text-warning"></i></span>
-              <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-footer-item"><i class="fa fa-trash has-text-danger"></i></span>
+              <span @click="delete_post(o._idx)" class="card-footer-item"><i class="fa fa-check has-text-grey"></i></span>
             </div>
           </div> <!-- End Card-->
       </div> <!-- End List -->
