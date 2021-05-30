@@ -20,12 +20,7 @@ let init = (app) => {
 
         // Data items for display
         orgs : [],
-        allocations: [
-            {
-                org_name: "Harmony-at-Home",
-                amount: "1000"
-            }
-        ]
+        allocations: []
     };
 
     app.enumerate = (a) => {
@@ -86,15 +81,53 @@ let init = (app) => {
 
     // Functions to operate on allocations
 
+    // Iterates over the list of allocations to see if the org_id is
+    // already present
+    in_allocations = function(org_id) {
+        for (let i = 0; i < app.vue.allocations.length; i++){
+            if ( app.vue.allocations[i].org_id === org_id){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     // Allows the user to add an organizations from the organizations list to the allocations list
     app.add_to_allocations = function(org_idx){
+        // Get the organization id.
+        let org_id = app.vue.orgs[org_idx].id;
+        let org_name = app.vue.orgs[org_idx].org_name;
 
-    }
+        console.log(org_id)
+        console.log(in_allocations(org_id))
+        if (!in_allocations(org_id)){
+            app.vue.allocations.push({
+                org_id: org_id,
+                org_name: org_name,
+                amount: 0 
+            });
+            app.enumerate(app.vue.allocations);
+        }
+    };
+
+    // Remove an allocation from the allocations list
+    app.remove_from_allocations = function (allocation_idx){
+        let id = app.vue.allocations[allocation_idx].id;
+        // TODO: insert API call to update DB
+
+        for (let i = 0; i < app.vue.allocations.length; i++){
+            if (app.vue.allocations[i].id === id){
+                app.vue.orgs.splice(i, 1);
+                app.enumerate(app.vue.allocations);
+                break;
+            }
+        }        
+    };
 
     // Clears the allocations list
     app.clear_allocations = function(){
         app.vue.allocations = []
-    }
+    };
 
 
     // This contains all the methods.
@@ -109,7 +142,9 @@ let init = (app) => {
 
         // Functions for allocations
         add_to_allocations: app.add_to_allocations,
+        remove_from_allocations: app.remove_from_allocations,
         clear_allocations: app.clear_allocations
+
     };
 
     // This creates the Vue instance.
