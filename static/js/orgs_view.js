@@ -30,6 +30,12 @@ let init = (app) => {
         return a;
     };
 
+    app.orgs_in_allocations = () => {
+        for (i = 0; i < app.vue.orgs.length; i++) {
+            app.vue.orgs[i].in_allocations = app.in_allocations(app.vue.orgs[i].id);
+        }
+    };
+
     // Functions for managing org add form.
     app.set_add_status = function(new_status){
         //app.vue.add_mode = new_status;
@@ -83,7 +89,7 @@ let init = (app) => {
 
     // Iterates over the list of allocations to see if the org_id is
     // already present
-    in_allocations = function(org_id) {
+    app.in_allocations = function(org_id) {
         for (let i = 0; i < app.vue.allocations.length; i++){
             if ( app.vue.allocations[i].org_id === org_id){
                 return true;
@@ -99,14 +105,16 @@ let init = (app) => {
         let org_name = app.vue.orgs[org_idx].org_name;
 
         console.log(org_id)
-        console.log(in_allocations(org_id))
-        if (!in_allocations(org_id)){
+        console.log(app.in_allocations(org_id))
+
+        if (!app.in_allocations(org_id)){
             app.vue.allocations.push({
                 org_id: org_id,
                 org_name: org_name,
                 amount: 0 
             });
             app.enumerate(app.vue.allocations);
+            app.orgs_in_allocations();
         }
     };
 
@@ -119,6 +127,7 @@ let init = (app) => {
             if (app.vue.allocations[i].id === id){
                 app.vue.orgs.splice(i, 1);
                 app.enumerate(app.vue.allocations);
+                app.orgs_in_allocations();
                 break;
             }
         }        
@@ -126,7 +135,8 @@ let init = (app) => {
 
     // Clears the allocations list
     app.clear_allocations = function(){
-        app.vue.allocations = []
+        app.vue.allocations = [];
+        app.orgs_in_allocations();
     };
 
 
@@ -143,7 +153,8 @@ let init = (app) => {
         // Functions for allocations
         add_to_allocations: app.add_to_allocations,
         remove_from_allocations: app.remove_from_allocations,
-        clear_allocations: app.clear_allocations
+        clear_allocations: app.clear_allocations,
+        in_allocations: app.in_allocations
 
     };
 
@@ -160,6 +171,7 @@ let init = (app) => {
         // Typically this is a server GET call to load the data.
         axios.get(load_orgs_url).then(function(response) {
             app.vue.orgs=app.enumerate(response.data.orgs);
+            app.orgs_in_allocations();
         });
     };
 
