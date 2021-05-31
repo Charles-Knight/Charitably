@@ -140,15 +140,15 @@ Allocations: These endpoints deal with managing user allocations
 @action.uses(db, url_signer.verify())
 def submit_allocations():
     allocations = request.json
-    for allocation in allocations:
-        print(allocation)
-        id = db.allocations.insert(
-            org_id=allocation['org_id'],
-            user_id=get_user_id(),
-            amount=allocation['amount'],
-            submitted=False
-        )
-        allocation['id'] = id
+    for alloc in allocations:
+        print(alloc)
+        db(db.allocations.id == alloc['id']).update(amount=alloc['amount'])
+        # record = db.allocations['id'][allocation['id']]
+        # record.update_record(
+        #     amount=allocations['amount']
+        # )
+
+        # row.update_record()
     
     return dict(allocations=allocations)
 
