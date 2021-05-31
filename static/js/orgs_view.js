@@ -108,13 +108,18 @@ let init = (app) => {
         console.log(app.in_allocations(org_id))
 
         if (!app.in_allocations(org_id)){
-            app.vue.allocations.push({
-                org_id: org_id,
-                org_name: org_name,
-                amount: 0 
+            axios.post(add_allocation_url, {
+                org_id: org_id
+            }).then( function(response){
+                app.vue.allocations.push({
+                    id: response.data.id,
+                    org_id: org_id,
+                    org_name: org_name,
+                    amount: 0 
+                });
+                app.enumerate(app.vue.allocations);
+                app.orgs_in_allocations();
             });
-            app.enumerate(app.vue.allocations);
-            app.orgs_in_allocations();
         }
     };
 
@@ -135,8 +140,20 @@ let init = (app) => {
 
     // Clears the allocations list
     app.clear_allocations = function(){
+        for(i = 0; i < app.vue.allocations.length; i++){
+            allocation_id = app.vue.allocations[i].id
+            axios.post(remove_allocation_url, {
+                id: allocation_id
+            })
+        }
         app.vue.allocations = [];
         app.orgs_in_allocations();
+    };
+
+    // Submit allocations to databse and set users status to submitted.
+    // TODO: add field DB entry to track users submission status
+    app.submit_allocations = function(){
+        axios.post(submit_allocations_url, app.vue.allocations).then();
     };
 
 
@@ -153,6 +170,7 @@ let init = (app) => {
         // Functions for allocations
         add_to_allocations: app.add_to_allocations,
         remove_from_allocations: app.remove_from_allocations,
+        submit_allocations: app.submit_allocations,
         clear_allocations: app.clear_allocations,
         in_allocations: app.in_allocations
 
@@ -171,6 +189,9 @@ let init = (app) => {
         // Typically this is a server GET call to load the data.
         axios.get(load_orgs_url).then(function(response) {
             app.vue.orgs=app.enumerate(response.data.orgs);
+        });
+        axios.get(load_allocations_url).then(function(response){
+            app.vue.allocations=app.enumerate(response.data.allocations);
             app.orgs_in_allocations();
         });
     };

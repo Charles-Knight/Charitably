@@ -27,7 +27,7 @@ db.define_table(
     'groups',
     Field('group_name', requires=IS_NOT_EMPTY()),
     Field('funding'),
-    Field('process_stage')
+    Field('process_stage'),
 )
 
 db.define_table(
@@ -51,7 +51,8 @@ db.define_table(
     'allocations',
     Field('org_id', 'references organizations'),
     Field('user_id', 'references auth_user'),
-    Field('amount')
+    Field('amount'),
+    Field('submitted', 'boolean', defualt=False)
 
 )
 

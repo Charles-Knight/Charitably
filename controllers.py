@@ -61,15 +61,24 @@ def org_view():
     
     return dict(
         # COMPLETE: return here any signed URLs you need.
-        load_orgs_url   = URL('load_orgs', signer=url_signer),
-        add_org_url     = URL('add_org', signer=url_signer),
-        delete_org_url  = URL('delete_org', signer=url_signer),
-        edit_org_url    = URL('edit_org', signer=url_signer),
-        email           = get_user_email()
+        load_orgs_url          = URL('load_orgs', signer=url_signer),
+        add_org_url            = URL('add_org', signer=url_signer),
+        delete_org_url         = URL('delete_org', signer=url_signer),
+        edit_org_url           = URL('edit_org', signer=url_signer),
+        
+        load_allocations_url   = URL('load_allocations', signer=url_signer),
+        submit_allocations_url = URL('submit_allocations', signer=url_signer),
+        add_allocation_url     = URL('add_allocation', signer=url_signer),
+        remove_allocation_url  = URL('remove_allocation', signer=url_signer),
+        email                  = get_user_email()
     )
 
 """
 API Endpoints
+"""
+
+"""
+Organizations: These endpoints deal with managing organizations
 """
 @action('load_orgs')
 @action.uses(db, url_signer.verify())
@@ -124,4 +133,69 @@ def delete_org():
 def edit_org():
     pass
 
+"""
+Allocations: These endpoints deal with managing user allocations
+"""
+@action('submit_allocations', method="POST")
+@action.uses(db, url_signer.verify())
+def submit_allocations():
+    allocations = request.json
+    for allocation in allocations:
+        print(allocation)
+        id = db.allocations.insert(
+            org_id=allocation['org_id'],
+            user_id=get_user_id(),
+            amount=allocation['amount'],
+            submitted=False
+        )
+        allocation['id'] = id
+    
+    return dict(allocations=allocations)
 
+'''
+Adds new allocation to the allocations table. Sets initial amount to zero
+amount will be updated when the user determines how much they want to allocate
+to this organization. Returns the allocations id in the database
+'''
+@action('add_allocation', method="POST")
+@action.uses(db, url_signer.verify())
+def add_allocation():
+    org_id = request.json['org_id']
+
+    id = db.allocations.insert(
+        org_id=org_id,
+        user_id=get_user_id,
+        submitted=False,
+        amount=0
+    )
+
+    return dict(id=id)
+
+@action('update_allocation', method="POST")
+@action.uses(db, url_signer.verify())
+def update_allocations():
+    
+    pass
+
+
+@action('remove_allocation', method="POST")
+@action.uses(db, url_signer.verify())
+def remove_allocation():
+    id = request.json['id']
+    assert id is not None
+    print(id)
+    db(db.allocations.id == id).delete()
+    
+    return "ok"
+
+@action('load_allocations')
+@action.uses(db, url_signer.verify())
+def load_allocations():
+    allocations = db(db.allocations.user_id == get_user_id()).select().as_list()
+    for allocation in allocations:
+        org_id = allocation['org_id']
+        org_name = db.organizations[org_id]['org_name']
+        allocation['org_name'] = org_name
+    return dict(
+        allocations = allocations
+    )

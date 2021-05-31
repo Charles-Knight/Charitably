@@ -22,18 +22,23 @@ Actual user content: We go here only when the user is logged in
 <div class="section" id="vue-target" v-cloak>
 <!-- Put here your Vue.js template -->
 
-  <!-- Organizations List-->
+  <!-- Add button. I use 2 columns here so that the button lines up with the left edge of cards -->
   <div class="columns">
-    
-    <!-- Orgs column-->
-    <div class="column is-8">    
-
-      <!-- Add button -->
+    <div class="column is-6">
       <div class="container block">
         <button @click="set_add_status('modal is-active')" class="button is-primary">
           <i class="fa fa-plus fa-fw"></i>
         </button>
       </div>
+    </div>
+    <div class="column is-6"></div>
+  </div>
+
+  <!-- Organizations List-->
+  <div class="columns">
+    
+    <!-- Orgs column-->
+    <div class="column is-6">    
       
       <!-- Card for each organization -->
       <div v-for="o in orgs.slice()" class="block">
@@ -63,7 +68,7 @@ Actual user content: We go here only when the user is logged in
     </div>
 
     <!-- Allocations Column -->
-    <div class="column is-4">
+    <div class="column is-6">
       <div class="box">
         <label class="label">Your allocations</label>
         
@@ -71,13 +76,12 @@ Actual user content: We go here only when the user is logged in
         <nav v-for="a in allocations.slice()" class="level">
           <div class="level-left">
             <div class="level-item">
-              <p class="subtitle">{{a.org_name}}</p>    
+              <label class="label">{{a.org_name}}</label>    
             </div>
           </div>
           <div class="level-right">
             <div class="level-item">
-              <!-- <input type="text" v-model="a.amount" class="input"> -->
-              <p class="subtitle">{{a.amount}}</p>    
+              <input class="input" v-model="a.amount" type="text">
             </div>
           </div>
         </nav>
@@ -90,7 +94,7 @@ Actual user content: We go here only when the user is logged in
             <!-- Submit button -->
             <div class="level-item">
               <div class="container block">
-                <button @click="set_add_status('modal is-active')" class="button is-primary">
+                <button @click="submit_allocations()" class="button is-primary">
                   <i class="fa fa-check fa-fw"></i>Submit
                 </button>
               </div>
@@ -175,10 +179,16 @@ Actual user content: We go here only when the user is logged in
 
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let load_orgs_url = "[[=XML(load_orgs_url)]]"
-  let add_org_url = "[[=XML(add_org_url)]]"
-  let delete_org_url = "[[=XML(delete_org_url)]]"
-  let edit_org_url = "[[=XML(edit_org_url)]]"
+  let load_orgs_url          = "[[=XML(load_orgs_url)]]"
+  let add_org_url            = "[[=XML(add_org_url)]]"
+  let delete_org_url         = "[[=XML(delete_org_url)]]"
+  let edit_org_url           = "[[=XML(edit_org_url)]]"
+  
+  let load_allocations_url   = "[[=XML(load_allocations_url)]]"
+  let add_allocation_url     = "[[=XML(add_allocation_url)]]"
+  let remove_allocation_url  = "[[=XML(remove_allocation_url)]]" 
+  let submit_allocations_url = "[[=XML(submit_allocations_url)]]"
 </script>
+
 <script src="js/orgs_view.js"></script>
 [[end]]
