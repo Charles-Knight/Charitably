@@ -27,7 +27,9 @@ db.define_table(
     'groups',
     Field('group_name', requires=IS_NOT_EMPTY()),
     Field('funding'),
+    Field('group_desc'),
     Field('process_stage'),
+    Field('owner', 'references auth_user')
 )
 
 db.define_table(

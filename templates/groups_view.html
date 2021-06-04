@@ -1,0 +1,209 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+</style>
+
+<!---------------------------------------------------------------------------------------
+Standard Banner
+---------------------------------------------------------------------------------------->
+<section class="hero has-background-link-light">
+  <div class="hero-body">
+     <h1 class="title">Charitably</h1>
+  </div>
+</section>
+
+<!---------------------------------------------------------------------------------------
+Actual user content: We go here only when the user is logged in
+---------------------------------------------------------------------------------------->
+[[if email:]]
+<div class="section" id="vue-target" v-cloak>
+<!-- Put here your Vue.js template -->
+
+  <!-- Add button. I use 2 columns here so that the button lines up with the left edge of cards -->
+  <div class="columns">
+    <div class="column is-6">
+      <!-- Button to add create group -->
+      <div class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <div class="container block">
+              <button @click="set_add_status('modal is-active')" class="button is-primary">
+                New Group
+              </button>
+            </div>
+          </div>
+
+          <!-- Drop down to select group -->
+          <div class="level-item">
+            <div :class="drop_active">
+              <div class="dropdown-trigger">
+                <button @click="toggle_drop()"  class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                  <span>Groups</span>
+                  <span class="icon is-small">
+                    <i class="fa fa-angle-down" aria-hidden="true"></i>
+                  </span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                <div v-for="g in groups.slice()" class="dropdown-content">
+                  
+                    <span @click="select_group(g._idx)" class="dropdown-item">{{g.group_name}}</span>  
+                    
+                  
+                </div> 
+              </div><!-- End List -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second column -->
+    <div class="column is-6">
+      <!-- Button to add membership -->
+      <div class="container block">
+        <button @click="toggle_add_member()" class="button is-primary">
+          Add Member
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content: left column is groups you admin, right column is details / membership of selected group -->
+  <div class="columns">
+    
+    <!-- Groups -->
+    <div class="column is-6">
+      <p class="title">Groups Details</p>
+
+      <label class="label">Group</label>
+      <div class="control">
+        <input type="input" v-model="selected_group_name" class="input">
+      </div>
+
+      <label class="label">Description</label>
+      <div class="control">
+        <textarea type="text" v-model="selected_group_desc" class="textarea"></textarea>
+      </div>
+
+      <label class="label">Funding</label>
+      <div class="control">
+        <input type="input" v-model="selected_group_funding" class="input">
+      </div>
+    </div>
+
+    <!-- Selected group details -->
+    <div class="column is-6">
+      <p class="title">Members</p>
+    </div>
+  </div>
+
+  <!---------------------------------------------------------------------------------------
+  Add org card modal: is put in to view when the user clicks the plus button
+  * Contains form for: Name, Website, Description
+  * Can click submit when finished or cancel to exit
+  ---------------------------------------------------------------------------------------->
+  <div :class="modal_active">
+    <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <!-- Title -->
+          <p class="modal-card-title">Create a new group</p>
+          <button class="delete"  @click="set_add_status('modal')" aria-label="close"></button>
+        </header>
+        
+        <section class="modal-card-body">  
+          <!-- Form fields -->
+          <div class="field">
+            <label class="label">Group Name</label>
+            <div class="control">
+              <input type="text" v-model="new_group_name" class="input">
+            </div>
+
+            <label class="label">Group Description</label>
+            <div class="control">
+              <textarea type="text" v-model="new_group_desc" class="textarea"></textarea>
+            </div>
+
+            <label class="label">Funding Level</label>
+            <div class="control">
+              <input type="text" v-model="new_funding_amount" class="input">
+            </div>
+          </div>  
+        </section>
+
+        <footer class="modal-card-foot">
+          <!-- Submit / Cancel  buttons -->
+          <div class="field">
+            <div class="control">
+              <input type="submit" @click="create_group()" value="Submit" class="button is-primary">
+              <input type="submit" @click="set_add_status('modal')" value="Cancel" class="button is-warning">
+            </div>
+          </div>
+        </footer>
+      </div>
+  </div>
+
+  <!-- Modal for adding members -->
+  <div :class="member_modal">
+    <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <!-- Title -->
+          <p class="modal-card-title">Add new group member</p>
+          <button class="delete"  @click="toggle_add_member()" aria-label="close"></button>
+        </header>
+        
+        <section class="modal-card-body">  
+          <!-- Form fields -->
+          <div class="field">
+            <label class="label">User Email</label>
+            <div class="control">
+              <input type="text" v-model="new_member_email" class="input">
+            </div>
+          </div>  
+        </section>
+
+        <footer class="modal-card-foot">
+          <!-- Submit / Cancel  buttons -->
+          <div class="field">
+            <div class="control">
+              <input type="submit" @click="add_member()" value="Submit" class="button is-primary">
+              <input type="submit" @click="toggle_add_member()" value="Cancel" class="button is-warning">
+            </div>
+          </div>
+        </footer>
+      </div>
+  </div>
+
+</div> <!-- The end of the div controlled by Vue -->
+
+<!---------------------------------------------------------------------------------------
+  We go here if the user is not logged in BUT this should never happen!!!
+---------------------------------------------------------------------------------------->
+[[else:]]
+<div class="section">
+  <p class="box">Log in or sign up to get started today!</p>
+  <div class ="box">
+    <p>Somethings wrong... I can feel it</p>
+    <p>(you shouldn't be able to get here)</p>
+  </div>
+</div>
+[[pass]]
+
+[[block page_scripts]]
+
+<!-- Loads the index-specific js for Vue -->
+<script>
+  let create_group_url      = "[[=XML(create_group_url)]]"
+  let load_groups_url       = "[[=XML(load_groups_url)]]"
+
+  let add_group_member_url  = "[[=XML(add_group_member_url)]]"
+  let get_group_members_url = "[[=XML(get_group_members_url)]]"
+</script>
+
+<script src="js/groups_view.js"></script>
+[[end]]

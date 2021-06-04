@@ -73,6 +73,22 @@ def org_view():
         email                  = get_user_email()
     )
 
+@action('groups')
+@action.uses(db, auth, 'groups_view.html')
+def group_view():
+    if get_user_email() == None:
+        redirect(URL('index'))
+    
+    return dict(
+        email=get_user_email(),
+        name=get_user_name(),
+
+        create_group_url      = URL('create_group', signer=url_signer),
+        load_groups_url       = URL('load_groups', signer=url_signer),
+        add_group_member_url  = URL('add_group_member', signer=url_signer),
+        get_group_members_url = URL('get_group_members', signer=url_signer)
+    )
+
 """
 API Endpoints
 """
@@ -198,4 +214,78 @@ def load_allocations():
         allocation['org_name'] = org_name
     return dict(
         allocations = allocations
+    )
+
+"""
+Allocations: These endpoints deal with managing user groups
+"""
+@action('create_group', method="POST")
+@action.uses(db, url_signer.verify())
+def add_group():
+    #TODO: process input values
+    name = request.json['group_name']
+    desc = request.json['group_desc']
+    funds = request.json['funding']
+
+
+    id = db.groups.insert(
+        group_name = name,
+        funding = funds,
+        group_desc = desc,
+        process_stage = 1,
+        owner = get_user_id()
+    )
+
+    db.group_membership.insert(
+        groups_id = id,
+        users_id = get_user_id(),
+        role = "Admin"
+    )
+
+    return dict(
+        id=id
+    )
+
+@action('load_groups')
+@action.uses(db, url_signer.verify())
+def load_groups():
+    groups = db(db.groups.owner == get_user_id()).select().as_list()
+    return dict(
+        groups = groups
+    )
+
+@action('add_group_member', method="POST")
+@action.uses(db, url_signer.verify())
+def add_group_member():
+    # TODO: Check email is valid and return error if not
+    #       Then make sure user is made aware somehow
+    group_id = request.json['group_id']
+    member_email = request.json['email']
+    member_role = request.json['role']
+    member_user_id = db(db.auth_user.email == member_email).select().first()
+    member_user_name = db(db.auth_user.id == member_user_id).select().first()
+
+    id = db.group_membership.insert(
+        groups_id = group_id,
+        users_id = member_user_id,
+        role = member_role
+    )
+
+    return dict(
+        id = id,
+        group_id = group_id,
+        user_id = member_user_id,
+        user_email = member_email,
+        user_name = member_user_name
+    )
+
+@action('get_group_members', method="POST")
+@action.uses(db, url_signer.verify())
+def get_group_members():
+    group_id = request.json['group_id']
+    
+    group_members = db(db.group_membership.id == group_id).select().as_list()
+
+    return dict(
+        group_members = group_members
     )
