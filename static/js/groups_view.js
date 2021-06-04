@@ -87,7 +87,15 @@ let init = (app) => {
         app.vue.selected_group_name = app.vue.groups[idx]['group_name'];
         app.vue.selected_group_desc = app.vue.groups[idx]['group_desc'];
         app.vue.selected_group_funding = app.vue.groups[idx]['funding'];
-        app.toggle_drop();
+        
+        axios.post(get_group_members_url,{
+            group_id: app.vue.groups[idx]['id']
+        }).then(function(response) {
+            console.log(response.data)
+            app.vue.selected_group_members = app.enumerate(response.data.group_members);
+            app.toggle_drop();
+        });
+        
 
         // TODO: Load selected group members
     };
@@ -113,8 +121,12 @@ let init = (app) => {
                 role: app.vue.new_member_role,
             }).then(function (response){
                 app.vue.selected_group_members.push({
-                    id: id
+                    id: response.data.id,
+                    group_id: response.data.group_id,
+                    user_email: response.data.user_email,
+                    user_name: response.data.user_name
                 });
+                app.enumerate(app.vue.selected_group_members);
                 app.clear_add_member();
             });
         

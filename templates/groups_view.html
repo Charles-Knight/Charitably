@@ -77,9 +77,9 @@ Actual user content: We go here only when the user is logged in
     
     <!-- Groups -->
     <div class="column is-6">
-      <p class="title">Groups Details</p>
+      <p class="title">Group Details</p>
 
-      <label class="label">Group</label>
+      <label class="label">Group Name</label>
       <div class="control">
         <input type="input" v-model="selected_group_name" class="input">
       </div>
@@ -98,6 +98,19 @@ Actual user content: We go here only when the user is logged in
     <!-- Selected group details -->
     <div class="column is-6">
       <p class="title">Members</p>
+      <table class="table is-narrow is-fullwidth is-striped">
+        <thead>
+          <th>Name</th>
+          <th>Email</th>
+          <th></th>
+        </thead>
+        <tr v-for="m in selected_group_members.slice()">
+          <td>{{m.user_name}}</td>          
+          <td>{{m.user_email}}</td>
+          <td><i class="fa fa-trash fa-fw"></i></td>
+        </tr>
+      </table>
+      
     </div>
   </div>
 
@@ -198,11 +211,12 @@ Actual user content: We go here only when the user is logged in
 
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let create_group_url      = "[[=XML(create_group_url)]]"
-  let load_groups_url       = "[[=XML(load_groups_url)]]"
+  let create_group_url        = "[[=XML(create_group_url)]]"
+  let load_groups_url         = "[[=XML(load_groups_url)]]"
 
-  let add_group_member_url  = "[[=XML(add_group_member_url)]]"
-  let get_group_members_url = "[[=XML(get_group_members_url)]]"
+  let add_group_member_url    = "[[=XML(add_group_member_url)]]"
+  let delete_group_member_url = "[[=XML(delete_group_member_url)]]"
+  let get_group_members_url   = "[[=XML(get_group_members_url)]]"
 </script>
 
 <script src="js/groups_view.js"></script>

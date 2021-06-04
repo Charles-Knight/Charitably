@@ -83,10 +83,11 @@ def group_view():
         email=get_user_email(),
         name=get_user_name(),
 
-        create_group_url      = URL('create_group', signer=url_signer),
-        load_groups_url       = URL('load_groups', signer=url_signer),
-        add_group_member_url  = URL('add_group_member', signer=url_signer),
-        get_group_members_url = URL('get_group_members', signer=url_signer)
+        create_group_url        = URL('create_group', signer=url_signer),
+        load_groups_url         = URL('load_groups', signer=url_signer),
+        add_group_member_url    = URL('add_group_member', signer=url_signer),
+        delete_group_member_url = URL('delete_group_member', signer=url_signer),
+        get_group_members_url   = URL('get_group_members', signer=url_signer)
     )
 
 """
@@ -262,8 +263,11 @@ def add_group_member():
     group_id = request.json['group_id']
     member_email = request.json['email']
     member_role = request.json['role']
-    member_user_id = db(db.auth_user.email == member_email).select().first()
-    member_user_name = db(db.auth_user.id == member_user_id).select().first()
+    member_user_id = db(db.auth_user.email == member_email).select().first()['id']
+    member_user_name = db(db.auth_user.id == member_user_id).select().first()['first_name']
+
+    print("Group_id: ", group_id )
+    print("member_user_id: ", member_user_id)
 
     id = db.group_membership.insert(
         groups_id = group_id,
@@ -279,12 +283,33 @@ def add_group_member():
         user_name = member_user_name
     )
 
+@action('delete_group_member')
+@action.uses(db, url_signer.verify())
+def delete_group_member():
+    id = request.params.get('id')
+    assert id is not None
+    
+    db(db.group_membership.id == id).delete()
+    
+    return "ok"
+
 @action('get_group_members', method="POST")
 @action.uses(db, url_signer.verify())
 def get_group_members():
     group_id = request.json['group_id']
     
-    group_members = db(db.group_membership.id == group_id).select().as_list()
+    group_members = db(db.group_membership.groups_id == group_id).select().as_list()
+    for member in group_members:
+        member_user_id = member['users_id']
+        user_email = db(db.auth_user.id == member_user_id).select().first()['email'] 
+        first = db(db.auth_user.id == member_user_id).select().first()['first_name'] 
+        last = db(db.auth_user.id == member_user_id).select().first()['last_name']
+        user_name = first + " " + last
+        
+        member['user_email'] = user_email
+        member['user_name'] = user_name
+
+    # print(group_members)
 
     return dict(
         group_members = group_members
