@@ -46,6 +46,7 @@ db.define_table(
     Field('org_name', requires=IS_NOT_EMPTY()),
     Field('org_web'),
     Field('org_description'),
+    Field('group_id', 'references groups'),
     Field('proposed_by', 'references auth_user')
 )
 

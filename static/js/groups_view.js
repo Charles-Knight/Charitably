@@ -10,37 +10,17 @@ let init = (app) => {
     // This is the Vue data.
     app.data = {
         // Complete as you see fit.
+        add_mode: false,
 
-        // Data items for group input 
+        // Data items for input mode
         modal_active: "modal",
-        drop_active: "dropdown",
-        new_group_name: "",
-        new_funding_amount : "",
-        new_group_desc : "",
-
-        // Data items for new member input
-        member_modal: "modal",
-        new_member_email: "",
-        new_member_role: "",
+        new_org_name: "",
+        new_org_web : "",
+        new_org_description : "",
 
         // Data items for display
-        groups : [],
-        selected_group_members: [],
-        selected_group_id: "",
-        
-        // Selected group properties
-        // States: clean, edit, pending
-        selected_group_name: "",
-        group_name_state: "clean",
-        
-        selected_group_desc: "",
-        group_desc_state: "clean",
-        
-        selected_group_funding: "",
-        group_funding_state: "clean",
-
-        
-        
+        orgs : [],
+        allocations: []
     };
 
     app.enumerate = (a) => {
@@ -50,179 +30,131 @@ let init = (app) => {
         return a;
     };
 
-    // Functions for managing group creation form.
+    app.orgs_in_allocations = () => {
+        for (i = 0; i < app.vue.orgs.length; i++) {
+            app.vue.orgs[i].in_allocations = app.in_allocations(app.vue.orgs[i].id);
+        }
+    };
+
+    // Functions for managing org add form.
     app.set_add_status = function(new_status){
         //app.vue.add_mode = new_status;
         app.vue.modal_active = new_status
     };
 
     app.clear_form = function(){
-        app.vue.new_group_name = "";
-        app.vue.new_funding_amount = "";
-        app.vue.new_group_desc = "";
+        app.vue.new_org_name = "";
+        app.vue.new_org_web = "";
+        app.vue.new_org_description = "";
     };
 
-    // Function to toggle group selection dropdown
-    app.toggle_drop = function(){
-        if (app.vue.drop_active === "dropdown"){
-            app.vue.drop_active = "dropdown is-active"
-        } else {
-            app.vue.drop_active = "dropdown"
-        }
-    };
-
-    // Functions that operate on groups
-    app.create_group = function(){
-        axios.post(create_group_url,
+    // Functions that operate on organizations
+    app.add_org = function(){
+        axios.post(add_org_url,
             {
-                group_name: app.vue.new_group_name,
-                group_desc: app.vue.new_group_desc,
-                funding: app.vue.new_funding_amount,
-
-            }).then(function (response){
-                app.vue.groups.push({
+                name: app.vue.new_org_name,
+                web: app.vue.new_org_web,
+                description: app.vue.new_org_description
+            }
+            ).then(function (response){
+                app.vue.orgs.push({
                     id: response.data.id,
-                    group_name: app.vue.new_group_name,
-                    group_desc: app.vue.new_group_desc,
-                    funding: app.vue.new_funding_amount,
+                    proposed_by: response.data.name,
+                    org_name: app.vue.new_org_name,
+                    org_web: app.vue.new_org_web,
+                    org_description: app.vue.new_org_description,
+                    deleteable: true
                 });
-                app.enumerate(app.vue.groups);
+                app.enumerate(app.vue.orgs);
                 app.clear_form();
                 app.set_add_status("modal");
             });
     };
 
-    app.select_group = function(idx){
-        console.log("Selected Group");
-        app.vue.selected_group_id = app.vue.groups[idx]['id'];
-        app.vue.selected_group_name = app.vue.groups[idx]['group_name'];
-        app.vue.selected_group_desc = app.vue.groups[idx]['group_desc'];
-        app.vue.selected_group_funding = app.vue.groups[idx]['funding'];
-        
-        axios.post(get_group_members_url,{
-            group_id: app.vue.groups[idx]['id']
-        }).then(function(response) {
-            console.log(response.data)
-            app.vue.selected_group_members = app.enumerate(response.data.group_members);
-            app.toggle_drop();
-        });
-    };
-
-    app.start_group_edit = function(property){
-        if(app.vue.selected_group_id){
-            if (property === 'name'){
-                app.vue.group_name_state = 'edit';
-            }else if (property === 'desc'){
-                app.vue.group_desc_state = 'edit';
-            } else if (property === 'funding'){
-                app.vue.group_funding_state = 'edit';
-            }
-        } else {
-            console.log("Attempted to edit group form without selecting group")
-        }
-    };
-
-    app.stop_group_edit = function(property){
-        // Determine the field to update
-        if(app.vue.selected_group_id){
-
-            if (property === 'name'){
-                let field = 'group_name';
-                app.vue.group_name_state = 'pending';
-                axios.post(edit_group_url,
-                    {
-                        id: app.vue.selected_group_id,
-                        field: field,
-                        value: app.vue.selected_group_name
-                    }).then(function(response){
-                        app.vue.group_name_state = 'clean';
-                    });
-            }else if (property === 'desc'){
-                let field = 'group_desc';
-                app.vue.group_desc_state = 'pending';
-                axios.post(edit_group_url,
-                    {
-                        id: app.vue.selected_group_id,
-                        field: field,
-                        value: app.vue.selected_group_desc
-                    }).then(function(response){
-                        app.vue.group_desc_state = 'clean';
-                    });
-            
-            } else if (property === 'funding'){
-                let field = 'funding';
-                app.vue.group_funding_state = 'pending';
-                axios.post(edit_group_url,
-                    {
-                        id: app.vue.selected_group_id,
-                        field: field,
-                        value: app.vue.selected_group_funding
-                    }).then(function(response){
-                        app.vue.group_funding_state = 'clean';
-                    });
-            };
-        } else {
-            console.log("Attempted to send edit_group request to controller without selecting group")
-        }
-    };
-
-    app.toggle_add_member = function(){
-        if (app.vue.member_modal === "modal" && app.vue.selected_group_id != ""){
-            app.vue.member_modal = "modal is-active";
-        } else {
-            app.vue.member_modal = "modal";
-        }
-    };
-
-    app.clear_add_member = function(){
-        app.vue.new_member_email = "";
-        app.vue.new_member_role = "";
-    };
-
-    app.add_member = function(){
-        axios.post(add_group_member_url,
-            {
-                group_id: app.vue.selected_group_id,
-                email: app.vue.new_member_email,
-                role: app.vue.new_member_role,
-            }).then(function (response){
-                app.vue.selected_group_members.push({
-                    id: response.data.id,
-                    group_id: response.data.group_id,
-                    user_email: response.data.user_email,
-                    user_name: response.data.user_name
-                });
-                app.enumerate(app.vue.selected_group_members);
-                app.clear_add_member();
-            });
-    };
-
-    app.delete_member = function(idx){
-        let id = app.vue.selected_group_members[idx]['id'];
-        axios.get(delete_group_member_url, {params: {id: id}}).then(function(response){
-            for(let i = 0; i < app.vue.selected_group_members.length; i++){
-                if (app.vue.selected_group_members[i].id === id){
-                    app.vue.selected_group_members.splice(i, 1);
-                    app.enumerate(app.vue.selected_group_members);
+    // Remove organization from the database and from the organiztions list view
+    app.delete_org = function(org_idx){
+        let id = app.vue.orgs[org_idx].id;
+        axios.get(delete_org_url, {params: {id: id}}).then(function(response){
+            for (let i = 0; i < app.vue.orgs.length; i++){
+                if (app.vue.orgs[i].id === id){
+                    app.vue.orgs.splice(i, 1);
+                    app.enumerate(app.vue.orgs);
                     break;
                 }
             }
         });
     };
 
-    // Remove organization from the database and from the organiztions list view
-    // app.delete_org = function(org_idx){
-    //     let id = app.vue.orgs[org_idx].id;
-    //     axios.get(delete_org_url, {params: {id: id}}).then(function(response){
-    //         for (let i = 0; i < app.vue.orgs.length; i++){
-    //             if (app.vue.orgs[i].id === id){
-    //                 app.vue.orgs.splice(i, 1);
-    //                 app.enumerate(app.vue.orgs);
-    //                 break;
-    //             }
-    //         }
-    //     });
-    // };
+    // Functions to operate on allocations
+
+    // Iterates over the list of allocations to see if the org_id is
+    // already present
+    app.in_allocations = function(org_id) {
+        for (let i = 0; i < app.vue.allocations.length; i++){
+            if ( app.vue.allocations[i].org_id === org_id){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // Allows the user to add an organizations from the organizations list to the allocations list
+    app.add_to_allocations = function(org_idx){
+        // Get the organization id.
+        let org_id = app.vue.orgs[org_idx].id;
+        let org_name = app.vue.orgs[org_idx].org_name;
+
+        console.log(org_id)
+        console.log(app.in_allocations(org_id))
+
+        if (!app.in_allocations(org_id)){
+            axios.post(add_allocation_url, {
+                org_id: org_id
+            }).then( function(response){
+                app.vue.allocations.push({
+                    id: response.data.id,
+                    org_id: org_id,
+                    org_name: org_name,
+                    amount: 0 
+                });
+                app.enumerate(app.vue.allocations);
+                app.orgs_in_allocations();
+            });
+        }
+    };
+
+    // Remove an allocation from the allocations list
+    app.remove_from_allocations = function (allocation_idx){
+        let id = app.vue.allocations[allocation_idx].id;
+        // TODO: insert API call to update DB
+
+        for (let i = 0; i < app.vue.allocations.length; i++){
+            if (app.vue.allocations[i].id === id){
+                app.vue.orgs.splice(i, 1);
+                app.enumerate(app.vue.allocations);
+                app.orgs_in_allocations();
+                break;
+            }
+        }        
+    };
+
+    // Clears the allocations list
+    app.clear_allocations = function(){
+        for(i = 0; i < app.vue.allocations.length; i++){
+            allocation_id = app.vue.allocations[i].id
+            axios.post(remove_allocation_url, {
+                id: allocation_id
+            })
+        }
+        app.vue.allocations = [];
+        app.orgs_in_allocations();
+    };
+
+    // Submit allocations to databse and set users status to submitted.
+    // TODO: add field DB entry to track users submission status
+    app.submit_allocations = function(){
+        axios.post(submit_allocations_url, app.vue.allocations).then();
+    };
 
 
     // This contains all the methods.
@@ -231,19 +163,17 @@ let init = (app) => {
         set_add_status: app.set_add_status,
         clear_form: app.clear_form,
 
-        // Function to toggle dropdown
-        toggle_drop: app.toggle_drop,
-
         // Functions for org management
-        create_group : app.create_group,
-        select_group : app.select_group,
-        start_group_edit: app.start_group_edit,
-        stop_group_edit: app.stop_group_edit,
+        add_org : app.add_org,
+        delete_org: app.delete_org,
 
-        // Functions for adding members
-        toggle_add_member : app.toggle_add_member,
-        add_member : app.add_member,
-        delete_member: app.delete_member
+        // Functions for allocations
+        add_to_allocations: app.add_to_allocations,
+        remove_from_allocations: app.remove_from_allocations,
+        submit_allocations: app.submit_allocations,
+        clear_allocations: app.clear_allocations,
+        in_allocations: app.in_allocations
+
     };
 
     // This creates the Vue instance.
@@ -257,9 +187,12 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        
-        axios.get(load_groups_url).then(function(response) {
-            app.vue.groups=app.enumerate(response.data.groups);
+        axios.get(load_orgs_url).then(function(response) {
+            app.vue.orgs=app.enumerate(response.data.orgs);
+        });
+        axios.get(load_allocations_url).then(function(response){
+            app.vue.allocations=app.enumerate(response.data.allocations);
+            app.orgs_in_allocations();
         });
     };
 

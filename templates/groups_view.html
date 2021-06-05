@@ -25,117 +25,93 @@ Actual user content: We go here only when the user is logged in
   <!-- Add button. I use 2 columns here so that the button lines up with the left edge of cards -->
   <div class="columns">
     <div class="column is-6">
-      <!-- Button to add create group -->
-      <div class="level">
-        <div class="level-left">
-          <div class="level-item">
-            <div class="container block">
-              <button @click="set_add_status('modal is-active')" class="button is-primary">
-                New Group
-              </button>
-            </div>
-          </div>
-
-          <!-- Drop down to select group -->
-          <div class="level-item">
-            <div :class="drop_active">
-              <div class="dropdown-trigger">
-                <button @click="toggle_drop()"  class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                  <span>Groups</span>
-                  <span class="icon is-small">
-                    <i class="fa fa-angle-down" aria-hidden="true"></i>
-                  </span>
-                </button>
-              </div>
-              <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                <div v-for="g in groups.slice()" class="dropdown-content">
-                    <span @click="select_group(g._idx)" class="dropdown-item">{{g.group_name}}</span>  
-                </div> 
-              </div><!-- End List -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Second column -->
-    <div class="column is-6">
-      <!-- Button to add membership -->
       <div class="container block">
-        <button @click="toggle_add_member()" class="button is-primary">
-          Add Member
+        <button @click="set_add_status('modal is-active')" class="button is-primary">
+          <i class="fa fa-plus fa-fw"></i>
         </button>
       </div>
     </div>
+    <div class="column is-6"></div>
   </div>
 
-  <!-- Content: left column is groups you admin, right column is details / membership of selected group -->
+  <!-- Organizations List-->
   <div class="columns">
     
-    <!-- Groups -->
-    <div class="column is-6">
-      <p class="title">Group Details</p>
-
-      <label class="label">Group Name</label>
-      <div class="control" :class="{'is-loading' : group_name_state === 'pending'}">
-        <input type="text" v-model="selected_group_name" class="input"
-          :class="{
-            'is-focused': group_name_state === 'edit',
-            'is-static': group_name_state === 'clean'
-          }"
-          :readonly="group_name_state === 'clean'"
-          @click="start_group_edit('name')"
-          @blur="stop_group_edit('name')"
-          >
-
-      </div>
-
-      <label class="label">Description</label>
-      <div class="control" :class="{'is-loading' : group_desc_state === 'pending'}">
-        <input type="text" v-model="selected_group_desc" class="input"
-        :class="{
-          'is-focused': group_desc_state === 'edit',
-          'is-static': group_desc_state === 'clean'
-        }"
-        :readonly="group_desc_state === 'clean'"
-        @click="start_group_edit('desc')"
-        @blur="stop_group_edit('desc')"
-        >
-      </div>
-
-      <label class="label">Funding</label>
-      <div class="control" :class="{'is-loading' : group_funding_state === 'pending'}">
-        <input type="text" v-model="selected_group_funding" class="input"
-        :class="{
-          'is-focused': group_funding_state === 'edit',
-          'is-static': group_funding_state === 'clean'
-        }"
-        :readonly="group_funding_state === 'clean'"
-        @click="start_group_edit('funding')"
-        @blur="stop_group_edit('funding')"
-        >
-      </div>
-    </div>
-
-    <!-- Selected group details -->
-    <div class="column is-6">
-      <p class="title">Members</p>
-      <table class="table is-narrow is-fullwidth is-striped">
-        <thead>
-          <th>Name</th>
-          <th>Email</th>
-          <th></th>
-        </thead>
-        <tr v-for="m in selected_group_members.slice()">
-          <td>{{m.user_name}}</td>          
-          <td>{{m.user_email}}</td>
-          
-          <td><i v-if="m.user_email != '[[=email]]'" @click="delete_member(m._idx)" class="fa fa-trash fa-fw"></i></td>
-          
-        </tr>
-      </table>
+    <!-- Orgs column-->
+    <div class="column is-6">    
       
+      <!-- Card for each organization -->
+      <div v-for="o in orgs.slice()" class="block">
+          <div class="card">
+            <div class="card-header has-background-link-light">
+              <p class="card-header-title">{{o.org_name}}</p>
+              <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-header-icon">
+                <span class="icon">
+                  <i class="fa fa-trash has-text-grey"></i>
+                </span>
+              </span>
+            </div>
+            <div class="card-content">
+              <label class="label">Description</label>
+              <p>{{o.org_description}}</p>
+            </div>
+            <div class="card-footer">
+              <span class="card-footer-item">{{o.proposed_by}}</span>
+              <a v-bind:href="o.org_web" class="card-footer-item">Website</a>
+              <span @click="add_to_allocations(o._idx)" class="card-footer-item">
+                <i v-if="o.in_allocations" class="fa fa-check has-text-success"></i>
+                <i v-else class="fa fa-check has-text-grey"></i>
+              </span>
+            </div>
+          </div> <!-- End Card-->
+      </div> <!-- End List -->
     </div>
+
+    <!-- Allocations Column -->
+    <div class="column is-6">
+      <div class="box">
+        <label class="label">Your allocations</label>
+        
+        <!-- List of allocations -->
+        <nav v-for="a in allocations.slice()" class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <label class="label">{{a.org_name}}</label>    
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="level-item">
+              <input class="input" v-model="a.amount" type="text">
+            </div>
+          </div>
+        </nav>
+
+        <!-- Submit and clear buttons -->
+        <nav class="level">
+          <div class="level-left"></div>
+          <div class="level-right">
+            
+            <!-- Submit button -->
+            <div class="level-item">
+              <div class="container block">
+                <button @click="submit_allocations()" class="button is-primary">
+                  <i class="fa fa-check fa-fw"></i>Submit
+                </button>
+              </div>
+            </div>
+            
+            <!-- Clear button -->
+            <div class="level-item">
+              <div class="container block">
+                <button @click="clear_allocations()" class="button is-danger">
+                  <i class="fa fa-trash fa-fw"></i>Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div> <!-- End of allocations column -->
   </div>
 
   <!---------------------------------------------------------------------------------------
@@ -148,26 +124,26 @@ Actual user content: We go here only when the user is logged in
       <div class="modal-card">
         <header class="modal-card-head">
           <!-- Title -->
-          <p class="modal-card-title">Create a new group</p>
+          <p class="modal-card-title">Add an organization</p>
           <button class="delete"  @click="set_add_status('modal')" aria-label="close"></button>
         </header>
         
         <section class="modal-card-body">  
           <!-- Form fields -->
           <div class="field">
-            <label class="label">Group Name</label>
+            <label class="label">Name</label>
             <div class="control">
-              <input type="text" v-model="new_group_name" class="input">
+              <input type="text" v-model="new_org_name" class="input">
             </div>
 
-            <label class="label">Group Description</label>
+            <label class="label">Website</label>
             <div class="control">
-              <textarea type="text" v-model="new_group_desc" class="textarea"></textarea>
+              <input type="text" v-model="new_org_web" class="input">
             </div>
 
-            <label class="label">Funding Level</label>
+            <label class="label">Description</label>
             <div class="control">
-              <input type="text" v-model="new_funding_amount" class="input">
+              <textarea type="text" v-model="new_org_description" class="textarea" placeholder="Tell us why this organization is important to you..."></textarea>
             </div>
           </div>  
         </section>
@@ -176,40 +152,8 @@ Actual user content: We go here only when the user is logged in
           <!-- Submit / Cancel  buttons -->
           <div class="field">
             <div class="control">
-              <input type="submit" @click="create_group()" value="Submit" class="button is-primary">
+              <input type="submit" @click="add_org()" value="Submit" class="button is-primary">
               <input type="submit" @click="set_add_status('modal')" value="Cancel" class="button is-warning">
-            </div>
-          </div>
-        </footer>
-      </div>
-  </div>
-
-  <!-- Modal for adding members -->
-  <div :class="member_modal">
-    <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <!-- Title -->
-          <p class="modal-card-title">Add new group member</p>
-          <button class="delete"  @click="toggle_add_member()" aria-label="close"></button>
-        </header>
-        
-        <section class="modal-card-body">  
-          <!-- Form fields -->
-          <div class="field">
-            <label class="label">User Email</label>
-            <div class="control">
-              <input type="text" v-model="new_member_email" class="input">
-            </div>
-          </div>  
-        </section>
-
-        <footer class="modal-card-foot">
-          <!-- Submit / Cancel  buttons -->
-          <div class="field">
-            <div class="control">
-              <input type="submit" @click="add_member()" value="Submit" class="button is-primary">
-              <input type="submit" @click="toggle_add_member()" value="Cancel" class="button is-warning">
             </div>
           </div>
         </footer>
@@ -235,14 +179,16 @@ Actual user content: We go here only when the user is logged in
 
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let create_group_url        = "[[=XML(create_group_url)]]"
-  let edit_group_url          = "[[=XML(edit_group_url)]]"
-  let load_groups_url         = "[[=XML(load_groups_url)]]"
-
-  let add_group_member_url    = "[[=XML(add_group_member_url)]]"
-  let delete_group_member_url = "[[=XML(delete_group_member_url)]]"
-  let get_group_members_url   = "[[=XML(get_group_members_url)]]"
+  let load_orgs_url          = "[[=XML(load_orgs_url)]]"
+  let add_org_url            = "[[=XML(add_org_url)]]"
+  let delete_org_url         = "[[=XML(delete_org_url)]]"
+  let edit_org_url           = "[[=XML(edit_org_url)]]"
+  
+  let load_allocations_url   = "[[=XML(load_allocations_url)]]"
+  let add_allocation_url     = "[[=XML(add_allocation_url)]]"
+  let remove_allocation_url  = "[[=XML(remove_allocation_url)]]" 
+  let submit_allocations_url = "[[=XML(submit_allocations_url)]]"
 </script>
 
-<script src="js/groups_view.js"></script>
+<script src="js/orgs_view.js"></script>
 [[end]]

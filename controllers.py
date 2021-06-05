@@ -73,8 +73,28 @@ def org_view():
         email                  = get_user_email()
     )
 
-@action('groups')
+@action('groups_view')
 @action.uses(db, auth, 'groups_view.html')
+def org_view():
+    if get_user_email() == None:
+        redirect(URL('index'))
+    
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        load_orgs_url          = URL('load_orgs', signer=url_signer),
+        add_org_url            = URL('add_org', signer=url_signer),
+        delete_org_url         = URL('delete_org', signer=url_signer),
+        edit_org_url           = URL('edit_org', signer=url_signer),
+        
+        load_allocations_url   = URL('load_allocations', signer=url_signer),
+        submit_allocations_url = URL('submit_allocations', signer=url_signer),
+        add_allocation_url     = URL('add_allocation', signer=url_signer),
+        remove_allocation_url  = URL('remove_allocation', signer=url_signer),
+        email                  = get_user_email()
+    )
+
+@action('groups_management')
+@action.uses(db, auth, 'groups_management.html')
 def group_view():
     if get_user_email() == None:
         redirect(URL('index'))
