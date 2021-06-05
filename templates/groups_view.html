@@ -49,10 +49,7 @@ Actual user content: We go here only when the user is logged in
               </div>
               <div class="dropdown-menu" id="dropdown-menu" role="menu">
                 <div v-for="g in groups.slice()" class="dropdown-content">
-                  
                     <span @click="select_group(g._idx)" class="dropdown-item">{{g.group_name}}</span>  
-                    
-                  
                 </div> 
               </div><!-- End List -->
             </div>
@@ -80,18 +77,43 @@ Actual user content: We go here only when the user is logged in
       <p class="title">Group Details</p>
 
       <label class="label">Group Name</label>
-      <div class="control">
-        <input type="input" v-model="selected_group_name" class="input">
+      <div class="control" :class="{'is-loading' : group_name_state === 'pending'}">
+        <input type="text" v-model="selected_group_name" class="input"
+          :class="{
+            'is-focused': group_name_state === 'edit',
+            'is-static': group_name_state === 'clean'
+          }"
+          :readonly="group_name_state === 'clean'"
+          @click="start_group_edit('name')"
+          @blur="stop_group_edit('name')"
+          >
+
       </div>
 
       <label class="label">Description</label>
-      <div class="control">
-        <textarea type="text" v-model="selected_group_desc" class="textarea"></textarea>
+      <div class="control" :class="{'is-loading' : group_desc_state === 'pending'}">
+        <input type="text" v-model="selected_group_desc" class="input"
+        :class="{
+          'is-focused': group_desc_state === 'edit',
+          'is-static': group_desc_state === 'clean'
+        }"
+        :readonly="group_desc_state === 'clean'"
+        @click="start_group_edit('desc')"
+        @blur="stop_group_edit('desc')"
+        >
       </div>
 
       <label class="label">Funding</label>
-      <div class="control">
-        <input type="input" v-model="selected_group_funding" class="input">
+      <div class="control" :class="{'is-loading' : group_funding_state === 'pending'}">
+        <input type="text" v-model="selected_group_funding" class="input"
+        :class="{
+          'is-focused': group_funding_state === 'edit',
+          'is-static': group_funding_state === 'clean'
+        }"
+        :readonly="group_funding_state === 'clean'"
+        @click="start_group_edit('funding')"
+        @blur="stop_group_edit('funding')"
+        >
       </div>
     </div>
 
@@ -107,7 +129,9 @@ Actual user content: We go here only when the user is logged in
         <tr v-for="m in selected_group_members.slice()">
           <td>{{m.user_name}}</td>          
           <td>{{m.user_email}}</td>
-          <td><i class="fa fa-trash fa-fw"></i></td>
+          
+          <td><i v-if="m.user_email != '[[=email]]'" @click="delete_member(m._idx)" class="fa fa-trash fa-fw"></i></td>
+          
         </tr>
       </table>
       
@@ -212,6 +236,7 @@ Actual user content: We go here only when the user is logged in
 <!-- Loads the index-specific js for Vue -->
 <script>
   let create_group_url        = "[[=XML(create_group_url)]]"
+  let edit_group_url          = "[[=XML(edit_group_url)]]"
   let load_groups_url         = "[[=XML(load_groups_url)]]"
 
   let add_group_member_url    = "[[=XML(add_group_member_url)]]"

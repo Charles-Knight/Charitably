@@ -27,9 +27,20 @@ let init = (app) => {
         groups : [],
         selected_group_members: [],
         selected_group_id: "",
+        
+        // Selected group properties
+        // States: clean, edit, pending
         selected_group_name: "",
+        group_name_state: "clean",
+        
         selected_group_desc: "",
+        group_desc_state: "clean",
+        
         selected_group_funding: "",
+        group_funding_state: "clean",
+
+        
+        
     };
 
     app.enumerate = (a) => {
@@ -95,9 +106,64 @@ let init = (app) => {
             app.vue.selected_group_members = app.enumerate(response.data.group_members);
             app.toggle_drop();
         });
-        
+    };
 
-        // TODO: Load selected group members
+    app.start_group_edit = function(property){
+        if(app.vue.selected_group_id){
+            if (property === 'name'){
+                app.vue.group_name_state = 'edit';
+            }else if (property === 'desc'){
+                app.vue.group_desc_state = 'edit';
+            } else if (property === 'funding'){
+                app.vue.group_funding_state = 'edit';
+            }
+        } else {
+            console.log("Attempted to edit group form without selecting group")
+        }
+    };
+
+    app.stop_group_edit = function(property){
+        // Determine the field to update
+        if(app.vue.selected_group_id){
+
+            if (property === 'name'){
+                let field = 'group_name';
+                app.vue.group_name_state = 'pending';
+                axios.post(edit_group_url,
+                    {
+                        id: app.vue.selected_group_id,
+                        field: field,
+                        value: app.vue.selected_group_name
+                    }).then(function(response){
+                        app.vue.group_name_state = 'clean';
+                    });
+            }else if (property === 'desc'){
+                let field = 'group_desc';
+                app.vue.group_desc_state = 'pending';
+                axios.post(edit_group_url,
+                    {
+                        id: app.vue.selected_group_id,
+                        field: field,
+                        value: app.vue.selected_group_desc
+                    }).then(function(response){
+                        app.vue.group_desc_state = 'clean';
+                    });
+            
+            } else if (property === 'funding'){
+                let field = 'funding';
+                app.vue.group_funding_state = 'pending';
+                axios.post(edit_group_url,
+                    {
+                        id: app.vue.selected_group_id,
+                        field: field,
+                        value: app.vue.selected_group_funding
+                    }).then(function(response){
+                        app.vue.group_funding_state = 'clean';
+                    });
+            };
+        } else {
+            console.log("Attempted to send edit_group request to controller without selecting group")
+        }
     };
 
     app.toggle_add_member = function(){
@@ -111,7 +177,7 @@ let init = (app) => {
     app.clear_add_member = function(){
         app.vue.new_member_email = "";
         app.vue.new_member_role = "";
-    }
+    };
 
     app.add_member = function(){
         axios.post(add_group_member_url,
@@ -129,8 +195,20 @@ let init = (app) => {
                 app.enumerate(app.vue.selected_group_members);
                 app.clear_add_member();
             });
-        
-    }
+    };
+
+    app.delete_member = function(idx){
+        let id = app.vue.selected_group_members[idx]['id'];
+        axios.get(delete_group_member_url, {params: {id: id}}).then(function(response){
+            for(let i = 0; i < app.vue.selected_group_members.length; i++){
+                if (app.vue.selected_group_members[i].id === id){
+                    app.vue.selected_group_members.splice(i, 1);
+                    app.enumerate(app.vue.selected_group_members);
+                    break;
+                }
+            }
+        });
+    };
 
     // Remove organization from the database and from the organiztions list view
     // app.delete_org = function(org_idx){
@@ -159,10 +237,13 @@ let init = (app) => {
         // Functions for org management
         create_group : app.create_group,
         select_group : app.select_group,
+        start_group_edit: app.start_group_edit,
+        stop_group_edit: app.stop_group_edit,
 
         // Functions for adding members
         toggle_add_member : app.toggle_add_member,
-        add_member : app.add_member
+        add_member : app.add_member,
+        delete_member: app.delete_member
     };
 
     // This creates the Vue instance.

@@ -84,10 +84,12 @@ def group_view():
         name=get_user_name(),
 
         create_group_url        = URL('create_group', signer=url_signer),
+        edit_group_url          = URL('edit_group', signer=url_signer),
         load_groups_url         = URL('load_groups', signer=url_signer),
         add_group_member_url    = URL('add_group_member', signer=url_signer),
         delete_group_member_url = URL('delete_group_member', signer=url_signer),
         get_group_members_url   = URL('get_group_members', signer=url_signer)
+        
     )
 
 """
@@ -218,7 +220,7 @@ def load_allocations():
     )
 
 """
-Allocations: These endpoints deal with managing user groups
+Groups: These endpoints deal with managing user groups
 """
 @action('create_group', method="POST")
 @action.uses(db, url_signer.verify())
@@ -254,6 +256,18 @@ def load_groups():
     return dict(
         groups = groups
     )
+
+@action('edit_group', method="POST")
+@action.uses(db, url_signer.verify())
+def update_group():
+    print(request.json)
+    id = request.json['id']
+    field = request.json['field']
+    value = request.json['value']
+    
+    assert id is not None
+    db(db.groups.id == id).update(**{field: value})
+    return 'ok'
 
 @action('add_group_member', method="POST")
 @action.uses(db, url_signer.verify())
