@@ -80,6 +80,17 @@ def org_view(group_id=None):
         # can be decoded in the controller?
     )
 
+@action('group_report/<group_id>')
+@action.uses(db, auth, url_signer.verfy()),
+def group_report(group_id):
+
+    return dict(
+        email=get_allocations_for_group(),
+        group_id=group_id,
+        
+        group_allocations_url = URL('allocations_for_group', signer=url_signer),
+    )
+
 @action('groups_view')
 @action.uses(db, auth, 'groups_view.html')
 def org_view():
