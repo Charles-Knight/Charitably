@@ -81,16 +81,13 @@ def org_view():
     
     return dict(
         # COMPLETE: return here any signed URLs you need.
+        email                  = get_user_email(),
+        load_groups_url = URL('load_groups', signer=url_signer),
+    
+        # To remove once the rest is implemented
         load_orgs_url          = URL('load_orgs', signer=url_signer),
-        add_org_url            = URL('add_org', signer=url_signer),
         delete_org_url         = URL('delete_org', signer=url_signer),
-        edit_org_url           = URL('edit_org', signer=url_signer),
-        
-        load_allocations_url   = URL('load_allocations', signer=url_signer),
-        submit_allocations_url = URL('submit_allocations', signer=url_signer),
         add_allocation_url     = URL('add_allocation', signer=url_signer),
-        remove_allocation_url  = URL('remove_allocation', signer=url_signer),
-        email                  = get_user_email()
     )
 
 @action('groups_management')
@@ -105,7 +102,7 @@ def group_view():
 
         create_group_url        = URL('create_group', signer=url_signer),
         edit_group_url          = URL('edit_group', signer=url_signer),
-        load_groups_url         = URL('load_groups', signer=url_signer),
+        load_groups_url         = URL('load_owned_groups', signer=url_signer),
         add_group_member_url    = URL('add_group_member', signer=url_signer),
         delete_group_member_url = URL('delete_group_member', signer=url_signer),
         get_group_members_url   = URL('get_group_members', signer=url_signer)
@@ -272,6 +269,23 @@ def add_group():
 @action('load_groups')
 @action.uses(db, url_signer.verify())
 def load_groups():
+    memberships = db(db.group_membership.users_id == get_user_id()).select().as_list()
+    groups = list()
+    for membership in memberships:
+        print(membership)
+        group = db(db.groups.id == membership['groups_id']).select().first().as_dict()
+        print(group)
+        groups.append(group)
+    
+    return dict(
+        groups=groups
+    )
+
+
+
+@action('load_owned_groups')
+@action.uses(db, url_signer.verify())
+def load_owned_groups():
     groups = db(db.groups.owner == get_user_id()).select().as_list()
     return dict(
         groups = groups
