@@ -237,6 +237,7 @@ def remove_allocation():
     
     return "ok"
 
+# Loads a users allocations for a particular group.
 @action('load_allocations')
 @action.uses(db, url_signer.verify())
 def load_allocations():
@@ -250,6 +251,30 @@ def load_allocations():
     return dict(
         allocations = allocations
     )
+
+# Loads all of the allocations for a group
+@action('allocations_for_group')
+@action.uses(db, url_signer.verify())
+def allocations_for_group():
+    # Get the group_id
+    group_id = request.params['group_id']
+    
+    # Get the allocations for the specified group
+    allocations = get_allocations_for_group(group_id)
+
+    return dict(allocations = allocations)
+
+# Helper function that does the work of getting allocations for group.
+# Creating helper function so that it can be called by other report generating
+# functions.
+def get_allocations_for_group(group_id):
+    allocations = db(db.allocations.group_id == group_id).select().as_list()
+    for allocation in allocations:
+        org_id = allocation['org_id']
+        org_name = db.organizations[org_id]['org_name']
+        allocation['org_name'] = org_name
+    
+    return allocations
 
 """
 Groups: These endpoints deal with managing user groups
@@ -311,6 +336,10 @@ def update_group():
     field = request.json['field']
     value = request.json['value']
     
+    print("ID: ", id)
+    print("Field: ", field)
+    print("Value: ", value)
+    
     assert id is not None
     db(db.groups.id == id).update(**{field: value})
     return 'ok'
@@ -369,3 +398,5 @@ def get_group_members():
     return dict(
         group_members = group_members
     )
+
+
