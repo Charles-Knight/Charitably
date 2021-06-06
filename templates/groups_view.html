@@ -1,11 +1,5 @@
 [[extend 'layout.html']]
 
-<style>
-[v-cloak] {
-     display: none;
-}
-</style>
-
 <!---------------------------------------------------------------------------------------
 Standard Banner
 ---------------------------------------------------------------------------------------->
@@ -19,27 +13,29 @@ Standard Banner
 Actual user content: We go here only when the user is logged in
 ---------------------------------------------------------------------------------------->
 [[if email:]]
-<div class="section" id="vue-target" v-cloak>
-<!-- Put here your Vue.js template -->
 
+<div class="section">
   <!-- Organizations List-->
   <div class="columns is-multiline">
 
     <!-- Card for each organization -->
-    <div v-for="g in groups.slice()" class="column">
-        <div class="card">
-          <div class="card-header has-background-link-light">
-            <p class="card-header-title">{{g.group_name}}</p>
-          </div>
-          <div class="card-content">
-            <label class="label">Description</label>
-            <p>{{g.group_desc}}</p>
-          </div>
-        </div> <!-- End Card-->
-    </div> <!-- End List -->
-  </div>
+    [[for group in groups:]]
+      <div class="column">
+        
+          <div onclick=document.location="[[=URL('organizations', group['id'], signer=url_signer) ]]" class="card">
+            <div class="card-header has-background-link-light">
+              <p class="card-header-title">[[=group["group_name"] ]]</p>
+            </div>
+            <div class="card-content">
+              <label class="label">Description</label>
+              <p>[[=group["group_desc"] ]]</p>
+            </div>
+          </div> <!-- End Card-->
 
-</div> <!-- The end of the div controlled by Vue -->
+      </div> <!-- End List -->
+    [[pass]]
+  </div>
+</div>
 
 <!---------------------------------------------------------------------------------------
   We go here if the user is not logged in BUT this should never happen!!!
@@ -53,13 +49,3 @@ Actual user content: We go here only when the user is logged in
   </div>
 </div>
 [[pass]]
-
-[[block page_scripts]]
-
-<!-- Loads the index-specific js for Vue -->
-<script>
-  let load_groups_url = "[[=XML(load_groups_url)]]"
-</script>
-
-<script src="js/groups_view.js"></script>
-[[end]]

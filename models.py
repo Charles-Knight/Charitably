@@ -46,7 +46,7 @@ db.define_table(
     Field('org_name', requires=IS_NOT_EMPTY()),
     Field('org_web'),
     Field('org_description'),
-    Field('group_id', 'references groups'),
+    Field('org_group_id', 'references groups'),
     Field('proposed_by', 'references auth_user')
 )
 
@@ -54,6 +54,7 @@ db.define_table(
     'allocations',
     Field('org_id', 'references organizations'),
     Field('user_id', 'references auth_user'),
+    Field('group_id', 'references groups'),
     Field('amount'),
     Field('submitted', 'boolean', defualt=False)
 

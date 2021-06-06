@@ -19,8 +19,9 @@ let init = (app) => {
         new_org_description : "",
 
         // Data items for display
+        group_id,
         orgs : [],
-        allocations: []
+        allocations: [],
     };
 
     app.enumerate = (a) => {
@@ -54,7 +55,8 @@ let init = (app) => {
             {
                 name: app.vue.new_org_name,
                 web: app.vue.new_org_web,
-                description: app.vue.new_org_description
+                description: app.vue.new_org_description,
+                group_id: app.vue.group_id
             }
             ).then(function (response){
                 app.vue.orgs.push({
@@ -109,12 +111,14 @@ let init = (app) => {
 
         if (!app.in_allocations(org_id)){
             axios.post(add_allocation_url, {
-                org_id: org_id
+                org_id: org_id,
+                group_id: app.vue.group_id
             }).then( function(response){
                 app.vue.allocations.push({
                     id: response.data.id,
                     org_id: org_id,
                     org_name: org_name,
+                    group_id: app.vue.group_id,
                     amount: 0 
                 });
                 app.enumerate(app.vue.allocations);
@@ -187,13 +191,16 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
-        axios.get(load_orgs_url).then(function(response) {
+        axios.get(load_orgs_url, {params : {group_id : app.vue.group_id}}).then(function(response) {
             app.vue.orgs=app.enumerate(response.data.orgs);
         });
-        axios.get(load_allocations_url).then(function(response){
+        axios.get(load_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
             app.vue.allocations=app.enumerate(response.data.allocations);
             app.orgs_in_allocations();
         });
+        
+        app.vue.group_id = group_id;
+        console.log("vue group_id = ", group_id)
     };
 
     // Call to the initializer.

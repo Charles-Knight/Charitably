@@ -47,18 +47,18 @@ they should be forward to the main application page
 def index():
     email = get_user_email()
     if email != None:
-        redirect(URL('organizations'))
+        redirect(URL('groups_view'))
 
     return dict(
         email = get_user_email()
     )
 
-@action('organizations')
-@action.uses(db, auth, url_signer, 'organizations_view.html')
-def org_view():
+@action('organizations/<group_id>')
+@action.uses(db, auth, url_signer.verify(), 'organizations_view.html')
+def org_view(group_id=None):
     if get_user_email() == None:
         redirect(URL('index'))
-    
+
     return dict(
         # COMPLETE: return here any signed URLs you need.
         load_orgs_url          = URL('load_orgs', signer=url_signer),
@@ -70,7 +70,14 @@ def org_view():
         submit_allocations_url = URL('submit_allocations', signer=url_signer),
         add_allocation_url     = URL('add_allocation', signer=url_signer),
         remove_allocation_url  = URL('remove_allocation', signer=url_signer),
-        email                  = get_user_email()
+        email                  = get_user_email(),
+        group_id               = group_id
+        # This is probably not a secure way to pass the group ID because it the
+        # user could modify it in the developer tools but I don't have time to
+        # think about that right now...
+        #
+        # Future me... Is there a way to deal with this? Maybe a hashed id, that
+        # can be decoded in the controller?
     )
 
 @action('groups_view')
@@ -79,15 +86,17 @@ def org_view():
     if get_user_email() == None:
         redirect(URL('index'))
     
+    memberships = db(db.group_membership.users_id == get_user_id()).select().as_list()
+    groups = list()
+    for membership in memberships:
+        group = db(db.groups.id == membership['groups_id']).select().first().as_dict()
+        groups.append(group)
+    
     return dict(
         # COMPLETE: return here any signed URLs you need.
-        email                  = get_user_email(),
-        load_groups_url = URL('load_groups', signer=url_signer),
-    
-        # To remove once the rest is implemented
-        load_orgs_url          = URL('load_orgs', signer=url_signer),
-        delete_org_url         = URL('delete_org', signer=url_signer),
-        add_allocation_url     = URL('add_allocation', signer=url_signer),
+        email  = get_user_email(),
+        groups = groups,
+        url_signer = url_signer,
     )
 
 @action('groups_management')
@@ -119,8 +128,11 @@ Organizations: These endpoints deal with managing organizations
 @action('load_orgs')
 @action.uses(db, url_signer.verify())
 def load_orgs():
+    
+    group_id = request.params.get('group_id')
+
     # Fetch orgs records
-    rows = db(db.organizations).select().as_list()
+    rows = db(db.organizations.org_group_id == group_id).select().as_list()
 
     for row in rows:
         # Add name of proposer
@@ -147,6 +159,7 @@ def add_org():
         org_name=request.json.get("name"),
         org_web=request.json.get("web"),
         org_description=request.json.get("description"),
+        org_group_id=request.json.get("group_id"),
         proposed_by=get_user_id()
     )
     
@@ -177,7 +190,6 @@ Allocations: These endpoints deal with managing user allocations
 def submit_allocations():
     allocations = request.json
     for alloc in allocations:
-        print(alloc)
         db(db.allocations.id == alloc['id']).update(amount=alloc['amount'])
         # record = db.allocations['id'][allocation['id']]
         # record.update_record(
@@ -197,10 +209,12 @@ to this organization. Returns the allocations id in the database
 @action.uses(db, url_signer.verify())
 def add_allocation():
     org_id = request.json['org_id']
+    group_id = request.json['group_id']
 
     id = db.allocations.insert(
         org_id=org_id,
         user_id=get_user_id,
+        group_id=group_id,
         submitted=False,
         amount=0
     )
@@ -219,7 +233,6 @@ def update_allocations():
 def remove_allocation():
     id = request.json['id']
     assert id is not None
-    print(id)
     db(db.allocations.id == id).delete()
     
     return "ok"
@@ -227,7 +240,9 @@ def remove_allocation():
 @action('load_allocations')
 @action.uses(db, url_signer.verify())
 def load_allocations():
-    allocations = db(db.allocations.user_id == get_user_id()).select().as_list()
+    group_id = request.params['group_id']
+    print(group_id)
+    allocations = db((db.allocations.user_id == get_user_id()) & (db.allocations.group_id == group_id)).select().as_list()
     for allocation in allocations:
         org_id = allocation['org_id']
         org_name = db.organizations[org_id]['org_name']
@@ -272,9 +287,7 @@ def load_groups():
     memberships = db(db.group_membership.users_id == get_user_id()).select().as_list()
     groups = list()
     for membership in memberships:
-        print(membership)
         group = db(db.groups.id == membership['groups_id']).select().first().as_dict()
-        print(group)
         groups.append(group)
     
     return dict(
@@ -294,7 +307,6 @@ def load_owned_groups():
 @action('edit_group', method="POST")
 @action.uses(db, url_signer.verify())
 def update_group():
-    print(request.json)
     id = request.json['id']
     field = request.json['field']
     value = request.json['value']
@@ -313,9 +325,6 @@ def add_group_member():
     member_role = request.json['role']
     member_user_id = db(db.auth_user.email == member_email).select().first()['id']
     member_user_name = db(db.auth_user.id == member_user_id).select().first()['first_name']
-
-    print("Group_id: ", group_id )
-    print("member_user_id: ", member_user_id)
 
     id = db.group_membership.insert(
         groups_id = group_id,
@@ -356,8 +365,6 @@ def get_group_members():
         
         member['user_email'] = user_email
         member['user_name'] = user_name
-
-    # print(group_members)
 
     return dict(
         group_members = group_members
