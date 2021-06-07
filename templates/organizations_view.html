@@ -99,7 +99,7 @@ Actual user content: We go here only when the user is logged in
           </div>
           <div class="level-right">
             <div class="level-item">
-              <p>{{allocations_total}}</p>
+              <p :class="{'has-text-danger' : allocations_total > allowance}">{{allocations_total}}</p>
             </div>
           </div>
         </div>
@@ -201,6 +201,8 @@ Actual user content: We go here only when the user is logged in
   let add_org_url            = "[[=XML(add_org_url)]]"
   let delete_org_url         = "[[=XML(delete_org_url)]]"
   let edit_org_url           = "[[=XML(edit_org_url)]]"
+
+  let get_user_allowance_url = "[[=XML(get_user_allowance_url)]]"
   
   let load_allocations_url   = "[[=XML(load_allocations_url)]]"
   let add_allocation_url     = "[[=XML(add_allocation_url)]]"

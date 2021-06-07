@@ -260,6 +260,11 @@ let init = (app) => {
         
         axios.get(load_groups_url).then(function(response) {
             app.vue.groups=app.enumerate(response.data.groups);
+            if (app.vue.groups.length > 0){
+                app.select_group(0)
+                app.toggle_drop()
+            }
+            
         });
     };
 

@@ -65,6 +65,8 @@ def org_view(group_id=None):
         add_org_url            = URL('add_org', signer=url_signer),
         delete_org_url         = URL('delete_org', signer=url_signer),
         edit_org_url           = URL('edit_org', signer=url_signer),
+
+        get_user_allowance_url = URL('get_user_allowance', signer=url_signer),
         
         load_allocations_url   = URL('load_allocations', signer=url_signer),
         submit_allocations_url = URL('submit_allocations', signer=url_signer),
@@ -268,6 +270,22 @@ def load_allocations():
         allocations = allocations
     )
 
+@action('get_user_allowance')
+@action.uses(db, url_signer.verify())
+def get_user_allowance():
+    group_id = request.params['group_id']
+    user_id = get_user_id()
+    record = db((db.group_membership.users_id == user_id) & (db.group_membership.groups_id == group_id)).select().first()
+
+    allowance = record['allowance']
+    print('Allowance: ', allowance)
+
+    return dict(
+        allowance=allowance,
+    )
+
+
+
 # Loads all of the allocations for a group
 @action('allocations_for_group')
 @action.uses(db, url_signer.verify())
@@ -411,7 +429,8 @@ def add_group_member():
     member_email = request.json['email']
     member_role = request.json['role']
     member_user_id = db(db.auth_user.email == member_email).select().first()['id']
-    
+    allowance = 0
+
     first = db(db.auth_user.id == member_user_id).select().first()['first_name'] 
     last = db(db.auth_user.id == member_user_id).select().first()['last_name']
     member_user_name = first + " " + last
@@ -419,7 +438,8 @@ def add_group_member():
     id = db.group_membership.insert(
         groups_id = group_id,
         users_id = member_user_id,
-        role = member_role
+        role = member_role,
+        allowance = allowance,
     )
 
     return dict(
@@ -427,6 +447,7 @@ def add_group_member():
         group_id = group_id,
         user_id = member_user_id,
         user_email = member_email,
+        allowance = allowance,
         user_name = member_user_name
     )
 

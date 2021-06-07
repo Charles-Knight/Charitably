@@ -21,6 +21,7 @@ let init = (app) => {
         // Data items for display
         group_id,
         allocations_total: 0,
+        allowance: 0,
         orgs : [],
         allocations: [],
     };
@@ -211,7 +212,10 @@ let init = (app) => {
         axios.get(load_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
             app.vue.allocations=app.enumerate(response.data.allocations);
             app.orgs_in_allocations();
-            allocations_total = app.sum_allocations();
+            app.vue.allocations_total = app.sum_allocations();
+        });
+        axios.get(get_user_allowance_url, {params: {group_id: app.vue.group_id}}).then(function(response){
+            app.vue.allowance=response.data.allowance
         });
         
         app.vue.group_id = group_id;
