@@ -14,6 +14,7 @@ let init = (app) => {
         // Data items for display
         group_id,
         allocations: [],
+        is_empty: true,
     };
 
     app.enumerate = (a) => {
@@ -24,11 +25,13 @@ let init = (app) => {
     };
 
     // Functions to operate on allocations
-
+    app.report_is_empty = function(){
+        return app.vue.allocations.length === 0;
+    };
 
     // This contains all the methods.
     app.methods = {
-
+        report_is_empty : app.report_is_empty
     };
 
     // This creates the Vue instance.
@@ -42,11 +45,12 @@ let init = (app) => {
     app.init = () => {
         // Put here any initialization code.
         // Typically this is a server GET call to load the data.
+        app.vue.group_id = group_id;
         axios.get(group_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
             app.vue.allocations=app.enumerate(response.data.allocations);
+            app.vue.is_empty = app.report_is_empty();
         });
         
-        app.vue.group_id = group_id;
         console.log("vue group_id = ", group_id)
     };
 

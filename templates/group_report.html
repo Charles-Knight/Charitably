@@ -24,7 +24,11 @@ Actual user content: We go here only when the user is logged in
 
   <a class="button is-primary" href="[[=back_url]]"><span><i class="fa fa-backward"></i> Back</span></a>  
   <div class="section">
-    <div class="box">
+    <div v-if="is_empty" class="box">
+      <p>You haven't made an contributions yet! Once you do we'll generate a report here.</p>
+    </div>
+    
+    <div v-else class="box">
       <table class="table is-narrow is-fullwidth is-striped">
         <thead>
           <th>Organization</th>
