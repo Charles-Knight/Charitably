@@ -14,6 +14,7 @@ let init = (app) => {
         // Data items for display
         group_id,
         allocations: [],
+        summary: [],
         is_empty: true,
     };
 
@@ -48,6 +49,7 @@ let init = (app) => {
         app.vue.group_id = group_id;
         axios.get(group_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
             app.vue.allocations=app.enumerate(response.data.allocations);
+            app.vue.summary=app.enumerate(response.data.summary);
             app.vue.is_empty = app.report_is_empty();
         });
         

@@ -25,20 +25,43 @@ Actual user content: We go here only when the user is logged in
   <a class="button is-primary" href="[[=back_url]]"><span><i class="fa fa-backward"></i> Back</span></a>  
   <div class="section">
     <div v-if="is_empty" class="box">
-      <p>You haven't made an contributions yet! Once you do we'll generate a report here.</p>
+      <p>You haven't made an contributions yet! Once you do we'll begin to generate a report here.</p>
     </div>
     
-    <div v-else class="box">
-      <table class="table is-narrow is-fullwidth is-striped">
-        <thead>
-          <th>Organization</th>
-          <th>Proposed By</th>
-        </thead>
-        <tr v-for="a in allocations.slice()">
-          <td>{{a.org_name}}</td>          
-          <td>{{a.amount}}</td>        
-        </tr>
-      </table>
+    <div v-else>
+
+      <div class="box">
+        <p class="subtitle">Individual Allocations</title>
+        <table class="table is-narrow is-fullwidth is-striped">
+          <thead>
+            <th>Organization</th>
+            <th>Contributor</th>
+            <th>Amount</th>
+          </thead>
+          <tr v-for="a in allocations.slice()">
+            <td>{{a.org_name}}</td>
+            <td>{{a.user_name}}</td>
+            <td>{{a.amount}}</td>        
+          </tr>
+        </table>
+      </div>
+
+      <div class="box">
+        <p class="subtitle">Summary</title>
+        <table class="table is-narrow is-fullwidth is-striped">
+          <thead>
+            <th>Organization</th>
+            <th>Total Contribution</th>
+            <th>Number of Contributions</th>
+          </thead>
+          <tr v-for="r in summary.slice()">
+            <td>{{r.org_name}}</td>          
+            <td>{{r.total}}</td>
+            <td>{{r.count}}</td>        
+          </tr>
+        </table>
+      </div>
+
     </div>
   </div>
 </div> <!-- The end of the div controlled by Vue -->

@@ -276,9 +276,18 @@ def allocations_for_group():
     group_id = request.params['group_id']
     
     # Get the allocations for the specified group
-    allocations = get_allocations_for_group(group_id)
+    # allocations = get_allocations_for_group(group_id)
 
-    return dict(allocations = allocations)
+    # summary = get_summary_for_group(group_id)
+    # print("-- SUMMARY --")
+    # for line in summary:
+    #     print(summary[line])
+
+    print(get_summary_for_group(group_id).values())
+
+    return dict(allocations = get_allocations_for_group(group_id),
+                summary = get_summary_for_group(group_id).values(),
+           )
 
 # Helper function that does the work of getting allocations for group.
 # Creating helper function so that it can be called by other report generating
@@ -286,11 +295,44 @@ def allocations_for_group():
 def get_allocations_for_group(group_id):
     allocations = db(db.allocations.group_id == group_id).select().as_list()
     for allocation in allocations:
+        # Add the organization name
         org_id = allocation['org_id']
         org_name = db.organizations[org_id]['org_name']
         allocation['org_name'] = org_name
-    
+
+        # Add the users name
+        user_id = allocation['user_id']
+        first = db(db.auth_user.id == user_id).select().first()['first_name'] 
+        last = db(db.auth_user.id == user_id).select().first()['last_name']
+        user_name = first + " " + last
+        allocation['user_name'] = user_name
+
     return allocations
+
+# TODO: THis would probably be better as some fancy database queries...
+#       but for now it's just going to be processed inefficiently with python.
+def get_summary_for_group(group_id):
+    allocations = get_allocations_for_group(group_id)
+    summary = dict()
+
+    # Add each org to the orgs list
+    for allocation in allocations:
+        org_id = allocation['org_id']
+        # if org is not yet in summary, add it to summary
+        if org_id not in summary:
+            summary[org_id] = {'org_id': org_id,
+                               'org_name': db.organizations[org_id]['org_name'],
+                               'total': allocation['amount'],
+                               'count': 1 }
+        
+        # otherwise, update the contribution total, and number of contributions
+        else:
+            summary[org_id]['total'] = summary[org_id]['total'] + allocation['amount']
+            summary[org_id]['count'] = summary[org_id]['count'] + 1
+    
+    return summary
+
+
 
 """
 Groups: These endpoints deal with managing user groups
@@ -369,7 +411,10 @@ def add_group_member():
     member_email = request.json['email']
     member_role = request.json['role']
     member_user_id = db(db.auth_user.email == member_email).select().first()['id']
-    member_user_name = db(db.auth_user.id == member_user_id).select().first()['first_name']
+    
+    first = db(db.auth_user.id == member_user_id).select().first()['first_name'] 
+    last = db(db.auth_user.id == member_user_id).select().first()['last_name']
+    member_user_name = first + " " + last
 
     id = db.group_membership.insert(
         groups_id = group_id,
