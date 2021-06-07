@@ -70,6 +70,9 @@ def org_view(group_id=None):
         submit_allocations_url = URL('submit_allocations', signer=url_signer),
         add_allocation_url     = URL('add_allocation', signer=url_signer),
         remove_allocation_url  = URL('remove_allocation', signer=url_signer),
+
+        back_url               = URL('groups_view'),
+        group_report_url       = URL('group_report', group_id, signer=url_signer),
         email                  = get_user_email(),
         group_id               = group_id
         # This is probably not a secure way to pass the group ID because it the
@@ -81,13 +84,14 @@ def org_view(group_id=None):
     )
 
 @action('group_report/<group_id>')
-@action.uses(db, auth, url_signer.verfy()),
+@action.uses(db, auth, url_signer.verify(), 'group_report.html')
 def group_report(group_id):
 
     return dict(
-        email=get_allocations_for_group(),
+        email=get_user_email(),
         group_id=group_id,
         
+        back_url              = URL('organizations', group_id, signer=url_signer),
         group_allocations_url = URL('allocations_for_group', signer=url_signer),
     )
 
@@ -120,6 +124,7 @@ def group_view():
         email=get_user_email(),
         name=get_user_name(),
 
+        back_url               = URL('groups_view'),
         create_group_url        = URL('create_group', signer=url_signer),
         edit_group_url          = URL('edit_group', signer=url_signer),
         load_groups_url         = URL('load_owned_groups', signer=url_signer),

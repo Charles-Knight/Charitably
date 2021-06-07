@@ -26,7 +26,7 @@ def get_time():
 db.define_table(
     'groups',
     Field('group_name', requires=IS_NOT_EMPTY()),
-    Field('funding'),
+    Field('funding', 'decimal(19,4)'),
     Field('group_desc'),
     Field('process_stage'),
     Field('owner', 'references auth_user')
@@ -36,11 +36,10 @@ db.define_table(
     'group_membership',
     Field('groups_id', 'references groups'),
     Field('users_id', 'references auth_user'),
+    Field('allowance', 'decimal(19,4)'),
     Field('role')
 )
 
-# TODO: Add groups_id field to organizations table and configure controller
-#       to return only orgs associated with the logged in users group
 db.define_table(
     'organizations',
     Field('org_name', requires=IS_NOT_EMPTY()),
@@ -55,7 +54,7 @@ db.define_table(
     Field('org_id', 'references organizations'),
     Field('user_id', 'references auth_user'),
     Field('group_id', 'references groups'),
-    Field('amount'),
+    Field('amount', type='decimal(19,4)'),
     Field('submitted', 'boolean', defualt=False)
 
 )

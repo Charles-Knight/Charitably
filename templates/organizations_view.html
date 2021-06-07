@@ -15,17 +15,22 @@ Standard Banner
   </div>
 </section>
 
+  
+
+
 <!---------------------------------------------------------------------------------------
 Actual user content: We go here only when the user is logged in
 ---------------------------------------------------------------------------------------->
 [[if email:]]
 <div class="section" id="vue-target" v-cloak>
 <!-- Put here your Vue.js template -->
-
+  
   <!-- Add button. I use 2 columns here so that the button lines up with the left edge of cards -->
   <div class="columns">
     <div class="column is-6">
-      <div class="container block">
+      <div class="buttons">
+        <a class="button is-primary" href="[[=back_url]]"><span><i class="fa fa-backward"></i> Back</span></a>
+        <a class="button is-primary" href="[[=group_report_url]]">View Report</a>
         <button @click="set_add_status('modal is-active')" class="button is-primary">
           <i class="fa fa-plus fa-fw"></i>
         </button>
@@ -70,7 +75,8 @@ Actual user content: We go here only when the user is logged in
     <!-- Allocations Column -->
     <div class="column is-6">
       <div class="box">
-        <label class="label">Your allocations</label>
+        <p class="title">Your allocations</p>
+        <hr></hr>
         
         <!-- List of allocations -->
         <nav v-for="a in allocations.slice()" class="level">
@@ -81,10 +87,22 @@ Actual user content: We go here only when the user is logged in
           </div>
           <div class="level-right">
             <div class="level-item">
-              <input class="input" v-model="a.amount" type="text">
+              <input class="input" v-model.number="a.amount" type="text">
             </div>
           </div>
         </nav>
+        <div class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <label class="label">Total: </label>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="level-item">
+              <p>{{allocations_total}}</p>
+            </div>
+          </div>
+        </div>
 
         <!-- Submit and clear buttons -->
         <nav class="level">

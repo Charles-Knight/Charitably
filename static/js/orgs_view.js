@@ -20,6 +20,7 @@ let init = (app) => {
 
         // Data items for display
         group_id,
+        allocations_total: 0,
         orgs : [],
         allocations: [],
     };
@@ -123,6 +124,7 @@ let init = (app) => {
                 });
                 app.enumerate(app.vue.allocations);
                 app.orgs_in_allocations();
+                app.vue.allocations_total = app.sum_allocations()
             });
         }
     };
@@ -157,7 +159,19 @@ let init = (app) => {
     // Submit allocations to databse and set users status to submitted.
     // TODO: add field DB entry to track users submission status
     app.submit_allocations = function(){
-        axios.post(submit_allocations_url, app.vue.allocations).then();
+        axios.post(submit_allocations_url, app.vue.allocations).then(
+            app.vue.allocations_total = app.sum_allocations()
+        );
+    };
+
+    app.sum_allocations = function(){
+        let sum = 0;
+        if (app.vue.allocations.length > 0){
+            for (let i = 0; i < app.vue.allocations.length; i++){
+                sum = sum + app.vue.allocations[i]['amount']
+            }
+        }
+        return sum;
     };
 
 
@@ -197,6 +211,7 @@ let init = (app) => {
         axios.get(load_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
             app.vue.allocations=app.enumerate(response.data.allocations);
             app.orgs_in_allocations();
+            allocations_total = app.sum_allocations();
         });
         
         app.vue.group_id = group_id;

@@ -22,144 +22,21 @@ Actual user content: We go here only when the user is logged in
 <div class="section" id="vue-target" v-cloak>
 <!-- Put here your Vue.js template -->
 
-  <!-- Add button. I use 2 columns here so that the button lines up with the left edge of cards -->
-  <div class="columns">
-    <div class="column is-6">
-      <div class="container block">
-        <button @click="set_add_status('modal is-active')" class="button is-primary">
-          <i class="fa fa-plus fa-fw"></i>
-        </button>
-      </div>
+  <a class="button is-primary" href="[[=back_url]]"><span><i class="fa fa-backward"></i> Back</span></a>  
+  <div class="section">
+    <div class="box">
+      <table class="table is-narrow is-fullwidth is-striped">
+        <thead>
+          <th>Organization</th>
+          <th>Proposed By</th>
+        </thead>
+        <tr v-for="a in allocations.slice()">
+          <td>{{a.org_name}}</td>          
+          <td>{{a.amount}}</td>        
+        </tr>
+      </table>
     </div>
-    <div class="column is-6"></div>
   </div>
-
-  <!-- Organizations List-->
-  <div class="columns">
-    
-    <!-- Orgs column-->
-    <div class="column is-6">    
-      
-      <!-- Card for each organization -->
-      <div v-for="o in orgs.slice()" class="block">
-          <div class="card">
-            <div class="card-header has-background-link-light">
-              <p class="card-header-title">{{o.org_name}}</p>
-              <span v-if="o.deleteable" @click="delete_org(o._idx)" class="card-header-icon">
-                <span class="icon">
-                  <i class="fa fa-trash has-text-grey"></i>
-                </span>
-              </span>
-            </div>
-            <div class="card-content">
-              <label class="label">Description</label>
-              <p>{{o.org_description}}</p>
-            </div>
-            <div class="card-footer">
-              <span class="card-footer-item">{{o.proposed_by}}</span>
-              <a v-bind:href="o.org_web" class="card-footer-item">Website</a>
-              <span @click="add_to_allocations(o._idx)" class="card-footer-item">
-                <i v-if="o.in_allocations" class="fa fa-check has-text-success"></i>
-                <i v-else class="fa fa-check has-text-grey"></i>
-              </span>
-            </div>
-          </div> <!-- End Card-->
-      </div> <!-- End List -->
-    </div>
-
-    <!-- Allocations Column -->
-    <div class="column is-6">
-      <div class="box">
-        <label class="label">Your allocations</label>
-        
-        <!-- List of allocations -->
-        <nav v-for="a in allocations.slice()" class="level">
-          <div class="level-left">
-            <div class="level-item">
-              <label class="label">{{a.org_name}}</label>    
-            </div>
-          </div>
-          <div class="level-right">
-            <div class="level-item">
-              <input class="input" v-model="a.amount" type="text">
-            </div>
-          </div>
-        </nav>
-
-        <!-- Submit and clear buttons -->
-        <nav class="level">
-          <div class="level-left"></div>
-          <div class="level-right">
-            
-            <!-- Submit button -->
-            <div class="level-item">
-              <div class="container block">
-                <button @click="submit_allocations()" class="button is-primary">
-                  <i class="fa fa-check fa-fw"></i>Submit
-                </button>
-              </div>
-            </div>
-            
-            <!-- Clear button -->
-            <div class="level-item">
-              <div class="container block">
-                <button @click="clear_allocations()" class="button is-danger">
-                  <i class="fa fa-trash fa-fw"></i>Clear
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </div> <!-- End of allocations column -->
-  </div>
-
-  <!---------------------------------------------------------------------------------------
-  Add org card modal: is put in to view when the user clicks the plus button
-  * Contains form for: Name, Website, Description
-  * Can click submit when finished or cancel to exit
-  ---------------------------------------------------------------------------------------->
-  <div :class="modal_active">
-    <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <!-- Title -->
-          <p class="modal-card-title">Add an organization</p>
-          <button class="delete"  @click="set_add_status('modal')" aria-label="close"></button>
-        </header>
-        
-        <section class="modal-card-body">  
-          <!-- Form fields -->
-          <div class="field">
-            <label class="label">Name</label>
-            <div class="control">
-              <input type="text" v-model="new_org_name" class="input">
-            </div>
-
-            <label class="label">Website</label>
-            <div class="control">
-              <input type="text" v-model="new_org_web" class="input">
-            </div>
-
-            <label class="label">Description</label>
-            <div class="control">
-              <textarea type="text" v-model="new_org_description" class="textarea" placeholder="Tell us why this organization is important to you..."></textarea>
-            </div>
-          </div>  
-        </section>
-
-        <footer class="modal-card-foot">
-          <!-- Submit / Cancel  buttons -->
-          <div class="field">
-            <div class="control">
-              <input type="submit" @click="add_org()" value="Submit" class="button is-primary">
-              <input type="submit" @click="set_add_status('modal')" value="Cancel" class="button is-warning">
-            </div>
-          </div>
-        </footer>
-      </div>
-  </div>
-
 </div> <!-- The end of the div controlled by Vue -->
 
 <!---------------------------------------------------------------------------------------
@@ -179,17 +56,9 @@ Actual user content: We go here only when the user is logged in
 
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let load_orgs_url          = "[[=XML(load_orgs_url)]]"
-  let add_org_url            = "[[=XML(add_org_url)]]"
-  let delete_org_url         = "[[=XML(delete_org_url)]]"
-  let edit_org_url           = "[[=XML(edit_org_url)]]"
-  
-  let load_allocations_url   = "[[=XML(load_allocations_url)]]"
-  let add_allocation_url     = "[[=XML(add_allocation_url)]]"
-  let remove_allocation_url  = "[[=XML(remove_allocation_url)]]" 
-  let submit_allocations_url = "[[=XML(submit_allocations_url)]]"
 
   let group_id = "[[=group_id]]"
+  let group_allocations_url = "[[=XML(group_allocations_url)]]"
 </script>
 
 <script src="js/group_report.js"></script>

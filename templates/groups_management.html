@@ -30,6 +30,7 @@ Actual user content: We go here only when the user is logged in
         <div class="level-left">
           <div class="level-item">
             <div class="container block">
+              <a class="button is-primary" href="[[=back_url]]"><span><i class="fa fa-backward"></i> Back</span></a>
               <button @click="set_add_status('modal is-active')" class="button is-primary">
                 New Group
               </button>
@@ -75,15 +76,11 @@ Actual user content: We go here only when the user is logged in
     <!-- Groups -->
     <div class="column is-6">
       <div class="box">
-        <p class="title">Group Details</p>
-
         <div class="field">
-          <!-- Field label -->
-          <label class="label">Group Name</label>
           <!-- The field itself -->
             <div class="field">
               <div class="control" :class="{'is-loading' : group_name_state === 'pending'}">
-                <input type="text" v-model="selected_group_name" class="input"
+                <input type="text" v-model="selected_group_name" class="input is-size-3 has-text-weight-semibold"
                   :class="{
                     'is-focused': group_name_state === 'edit',
                     'is-static': group_name_state === 'clean'
