@@ -86,6 +86,11 @@ let init = (app) => {
                     break;
                 }
             }
+            axios.get(load_allocations_url, {params: {group_id: app.vue.group_id}}).then(function(response){
+                app.vue.allocations=app.enumerate(response.data.allocations);
+                app.orgs_in_allocations();
+                app.vue.allocations_total = app.sum_allocations();
+            });
         });
     };
 

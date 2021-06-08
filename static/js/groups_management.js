@@ -194,6 +194,7 @@ let init = (app) => {
                 });
                 app.enumerate(app.vue.selected_group_members);
                 app.clear_add_member();
+                app.toggle_add_member();
             });
     };
 
