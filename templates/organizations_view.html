@@ -89,6 +89,11 @@ Actual user content: We go here only when the user is logged in
             <div class="level-item">
               <input class="input" v-model.number="a.amount" type="text">
             </div>
+            <div class="level-item">
+              <span class="icon">
+                <i @click="remove_from_allocations(a._idx)" class="fa fa-trash has-text-grey"></i>
+              </span>
+            </div>
           </div>
         </nav>
         <div class="level">

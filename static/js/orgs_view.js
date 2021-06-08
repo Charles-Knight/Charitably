@@ -131,18 +131,22 @@ let init = (app) => {
     };
 
     // Remove an allocation from the allocations list
-    app.remove_from_allocations = function (allocation_idx){
-        let id = app.vue.allocations[allocation_idx].id;
+    app.remove_from_allocations = function (idx){
+        let id = app.vue.allocations[idx].id;
         // TODO: insert API call to update DB
-
-        for (let i = 0; i < app.vue.allocations.length; i++){
-            if (app.vue.allocations[i].id === id){
-                app.vue.orgs.splice(i, 1);
-                app.enumerate(app.vue.allocations);
-                app.orgs_in_allocations();
-                break;
+        axios.post(remove_allocation_url,{
+            'id': id
+        }).then(function(response){
+            for (let i = 0; i < app.vue.allocations.length; i++){
+                if (app.vue.allocations[i].id === id){
+                    app.vue.allocations.splice(i, 1);
+                    app.enumerate(app.vue.allocations);
+                    app.orgs_in_allocations();
+                    app.vue.allocations_total = app.sum_allocations();
+                    break;
+                }
             }
-        }        
+        });     
     };
 
     // Clears the allocations list
