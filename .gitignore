@@ -2,3 +2,6 @@
 __pycache__/*
 databases/*
 !databases/README.md
+
+# Dockerfile swap
+.Dockerfile.swp
