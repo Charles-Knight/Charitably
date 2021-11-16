@@ -3,7 +3,7 @@ FROM python:3.8-slim-buster
 COPY requirements.txt requirements.txt
 RUN python -m pip install --upgrade py4web --no-cache-dir
 Run py4web setup apps -Y
-COPY . /apps/Charitably
+COPY ./src /apps/Charitably
 # CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=8085"]
 CMD ["py4web", "run","-H", "172.17.0.2", "apps"]
 
